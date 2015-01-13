@@ -121,51 +121,97 @@ This is the main js file for the site.
 
 Install [Grunt](http://gruntjs.com/) and the required plugins
 
-    $ sudo npm install grunt grunt-contrib-concat grunt-contrib-uglify grunt-phpunit grunt-contrib-compass grunt-contrib-sass grunt-copy --save-dev
+    $ sudo npm install grunt grunt-contrib-uglify grunt-sass grunt-contrib-watch grunt-phpunit --save-dev
 
 
 Create `/Gruntfile.js`, with the following contents:
 
     //Gruntfile
     module.exports = function(grunt) {
-
-    //Initializing the configuration object
-    grunt.initConfig({
-      // Paths variables
-      paths: {
-        // dev path files (scss etc.)
-        dev: {
-          css: './public/assets/scss/',
-          js: './public/assets/js/',
-          vendor: './public/assets/vendor/'
+      //Initializing the configuration object
+      grunt.initConfig({
+        // Paths variables
+        paths: {
+          // Development file locations (Where we put SASS files etc.)
+          src: {
+            css: './public/assets/scss/',
+            js: './public/assets/js/',
+            vendor: './public/assets/vendor/'
+          },
+          // Production file locationd where Grunt will output the files
+          dest: {
+            css: './public/stylesheets/',
+            js: './public/js/'
+          }
         },
-        // Production where Grunt output the files
-        production{
-          css: './public/stylesheets/',
-          js: './public/js/'
+
+        // Task configuration
+        // compiling of SASS files
+        sass: {
+          options: {
+            includePaths: ['<%= paths.src.vendor %>foundation/scss']
+            //compass: true
+          },
+          dev: {
+            files: {
+              '<%= paths.dest.css %>app.css': '<%= paths.src.css %>app.scss'
+            }
+          },
+          prod: {
+            options: {
+              // @link https://github.com/sindresorhus/grunt-sass#outputstyle
+              outputStyle: 'compressed',
+              sourceMap: true
+            },
+            files: {
+              '<%= paths.dest.css %>app.min.css': '<%= paths.src.css %>app.scss'
+            }
+          }
+        },
+        uglify: {
+          options: {
+            compress: true,
+            mangle: false // change to true if you want obfuscation (Changed variable names etc)
+          },
+          // minify JS files
+          prod: {
+            files: {
+              '<%= paths.dest.js %>app.min.js': [
+                '<%= paths.src.js %>app.js'
+              ],
+              '<%= paths.dest.js %>vendor.min.js': [
+                '<%= paths.src.vendor %>jquery/dist/jquery.js',
+                //'<%= paths.src.vendor %>jquery.cookie/jquery.cookie.js',
+                '<%= paths.src.vendor %>jquery.placeholder/jquery.placeholder.js',
+                '<%= paths.src.vendor %>fastclick/lib/fastclick.js',
+                '<%= paths.src.vendor %>foundation/js/foundation.js'
+              ]
+            }
+          }
+        },
+        phpunit: {
+          //...
+        },
+        watch: {
+          grunt: { files: ['Gruntfile.js'] },
+          sass: {
+            files: '<%= paths.src.css %>**/*.scss',
+            tasks: ['sass:dev']
+          },
+          uglify: {
+            files: '<%= paths.src.js %>**/*.js',
+            tasks: ['uglify:prod']
+          }
         }
-      },
+      });
 
-      // Task configuration
-      concat: {
-        //...
-      },
-      sass: {
-        //...
-      },
-      uglify: {
-        //...
-      },
-      phpunit: {
-        //...
-      },
-      watch: {
-        //...
-      }
-    });
+      // Plugin loading
+      grunt.loadNpmTasks('grunt-sass');
+      grunt.loadNpmTasks('grunt-contrib-watch');
+      grunt.loadNpmTasks('grunt-contrib-uglify');
 
-    // Plugin loading
-
-    // Task definition
-
+      // Task definition
+      grunt.registerTask('build', ['sass:dev']);                    // create the dev files (SASS etc.)
+      grunt.registerTask('release', ['sass:prod', 'uglify:prod']);  // create the release/production files
+      grunt.registerTask('default', ['build','watch']);             // watch for changes and run dev builds
     };
