@@ -12,7 +12,7 @@ module.exports = function(grunt) {
       },
       // Production file locationd where Grunt will output the files
       dest: {
-        css: './public/css/',
+        css: './public/stylesheets/',
         js: './public/js/'
       }
     },
@@ -20,83 +20,44 @@ module.exports = function(grunt) {
     // Task configuration
     // compiling of SASS files
     sass: {
+      options: {
+        includePaths: ['<%= paths.src.vendor %>foundation/scss']
+        //compass: true
+      },
       dev: {
-        options: {
-          compass: true
-        },
-        files: [{
-          expand: true,
-          cwd: '<%= paths.src.css %>',
-          src: '**/*.scss',
-          dest: '<%= paths.dest.css %>',
-          ext: '.css'
-        }]
+        files: {
+          '<%= paths.dest.css %>app.css': '<%= paths.src.css %>app.scss'
+        }
       },
       prod: {
         options: {
-          style: 'compressed',
-          compass: true
+          // @link https://github.com/sindresorhus/grunt-sass#outputstyle
+          outputStyle: 'compressed',
+          sourceMap: true
         },
-        files: [{
-          expand: true,
-          cwd: '<%= paths.src.css %>',
-          src: '**/*.scss',
-          dest: '<%= paths.dest.css %>',
-          ext: '.min.css'
-        }]
-      }
-    },
-    concat: {
-      // concates JS files
-      prod: {
-        options: {
-          separator: ';'
-        },
-        js_header: {
-          src: [
-            '<%= paths.src.vendor %>modernizr/modernizr.js'
-          ],
-          dest: '<%= paths.dest.js %>header.js'
-        },
-        js_footer: {
-          src: [
-            '<%= paths.src.vendor %>jquery/dist/jquery.js',
-            //'<%= paths.src.vendor %>jquery.cookie/jquery.cookie.js',
-            '<%= paths.src.vendor %>jquery.placeholder/jquery.placeholder.js',
-            '<%= paths.src.vendor %>fastclick/lib/fastclick.js',
-            '<%= paths.src.vendor %>foundation/js/foundation.js',
-            '<%= paths.src.js %>app.js'
-          ],
-          dest: '<%= paths.dest.js %>footer.js'
+        files: {
+          '<%= paths.dest.css %>app.min.css': '<%= paths.src.css %>app.scss'
         }
       }
     },
     uglify: {
-      // minifies JS
+      options: {
+        compress: true,
+        mangle: false // change to true if you want obfuscation (Changed variable names etc)
+      },
+      // minify JS files
       prod: {
-        options: {
-          mangle: false // change to true if you want obfuscation (Changed variable names etc)
-        },
-        // minify JS files
-        js: {
-          files: [{
-            expand: true,
-            cwd: '<%= paths.dest.js %>',
-            src: '*.js',
-            dest: '<%= paths.dest.js %>',
-            ext: '.min.js'
-          }]
-        }
-      }
-    },
-    // Copy dev versions of the JS files
-    copy: {
-      dev: {
         files: {
-          expand: true,
-          cwd: '<%= paths.src.js %>',
-          src: '**/*',
-          dest: '<%= paths.dest.js %>dev'
+          '<%= paths.dest.js %>app.min.js': [
+            '<%= paths.src.js %>app.js'
+          ],
+          '<%= paths.dest.js %>vendor.min.js': [
+            '<%= paths.src.vendor %>jquery/dist/jquery.js',
+            //'<%= paths.src.vendor %>jquery.cookie/jquery.cookie.js',
+            '<%= paths.src.vendor %>jquery.placeholder/jquery.placeholder.js',
+            '<%= paths.src.vendor %>fastclick/lib/fastclick.js',
+            '<%= paths.src.vendor %>foundation/js/foundation.js'
+          ]
         }
       }
     },
@@ -104,25 +65,25 @@ module.exports = function(grunt) {
       //...
     },
     watch: {
-      //...
+      grunt: { files: ['Gruntfile.js'] },
+      sass: {
+        files: '<%= paths.src.css %>**/*.scss',
+        tasks: ['sass:dev']
+      },
+      uglify: {
+        files: '<%= paths.src.js %>**/*.js',
+        tasks: ['uglify:prod']
+      }
     }
   });
 
   // Plugin loading
-  grunt.loadNpmTasks('grunt-contrib-compass');
-  grunt.loadNpmTasks('grunt-contrib-sass');
-  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-sass');
+  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-copy');
 
   // Task definition
-  grunt.registerTask( // default task - create dev versions of files
-    'default',
-    ['sass:dev', 'copy:dev']
-  );
-
-  grunt.registerTask( // release task - creates the production version of files
-    'release',
-    ['sass:prod', 'concat:prod', 'uglify:prod']
-  );
+  grunt.registerTask('build', ['sass:dev']);                    // create the dev files (SASS etc.)
+  grunt.registerTask('release', ['sass:prod', 'uglify:prod']);  // create the release/production files
+  grunt.registerTask('default', ['build','watch']);             // watch for changes and run dev builds
 };
