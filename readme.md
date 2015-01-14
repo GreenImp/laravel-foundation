@@ -1,5 +1,7 @@
 http://gabriela.io/blog/2014/08/10/laravel-with-grunt-bower-foundation-and-sass/
 
+    $ npm install -g tar.gz
+
 # Laravel
 
     $ laravel new site-name
