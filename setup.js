@@ -2,13 +2,17 @@
 
 
 // include required modules
-var exec  = require('child_process').exec,
-    fs    = require('fs'),
-    targz = require('tar.gz'),
-    http  = require('http'),
-    https = require('https'),
-    url   = require('url'),
-    path  = require('path');
+var exec    = require('child_process').exec,
+    fs      = require('fs'),
+    mv      = require('mv'),
+    rimraf  = require('rimraf'),
+    merge   = require('node-merge'),
+    targz   = require('tar.gz'),
+    http    = require('http'),
+    https   = require('https'),
+    url     = require('url');
+
+
 
 
 var projectName       = process.argv[2] || 'laravel-foundation',                                      // project name - used for directory name
@@ -16,11 +20,15 @@ var projectName       = process.argv[2] || 'laravel-foundation',                
     projectPath       = projectPathParent + '/' + projectName;                                        // path to the project directory
 
 
-const LOG_DIVIDER         = '====================================';
+const LOG_DIVIDER             = '====================================';
 
-const FOUNDATION_FILE_EXT = 'tar.gz';
-const FOUNDATION_FILENAME = 'master';
-const FOUNDATION_REPO_URL = 'https://codeload.github.com/zurb/foundation-libsass-template/' + FOUNDATION_FILE_EXT + '/' + FOUNDATION_FILENAME;
+
+const LARAVEL_PUBLIC_DIR      = 'public';
+
+const FOUNDATION_FILE_EXT     = 'tar.gz';
+const FOUNDATION_FILENAME     = 'master';
+const FOUNDATION_INT_FILENAME = 'foundation-libsass-template-master';
+const FOUNDATION_REPO_URL     = 'https://codeload.github.com/zurb/foundation-libsass-template/' + FOUNDATION_FILE_EXT + '/' + FOUNDATION_FILENAME;
 
 
 
@@ -95,7 +103,6 @@ var errorHandler          = function(errors){
       // get the file and save it
       return getRequestHandler(src)
           .get(src, function(response){
-            console.log(response);
             // write the file
             response.pipe(file);
 
@@ -188,7 +195,9 @@ var init  = {
     console.log(LOG_DIVIDER);
     console.log('# Setting up Foundation');
 
-    var downloadPath  = projectPath + '/' + FOUNDATION_FILENAME;
+    var downloadPath  = projectPath + '/' + FOUNDATION_FILENAME,
+        extractPath   = projectPath + '/' + FOUNDATION_FILENAME,
+        exrtactInt    = extractPath + '/' + FOUNDATION_INT_FILENAME;
 
     // download foundation and copy across any required files
     download(
@@ -200,10 +209,31 @@ var init  = {
         // extract the files
         extract(
           downloadPath + '.' + FOUNDATION_FILE_EXT,
-          projectPath + '/' + FOUNDATION_FILENAME, function(){
-            console.log('Files Extracted');
+          projectPath + '/' + FOUNDATION_FILENAME,
+          function(){
+            console.log('Merging Foundation into Laravel');
 
-            process.exit();
+            merge.mergeTo(exrtactInt, projectPath + '/' + LARAVEL_PUBLIC_DIR);
+
+            /*mv(exrtactInt, projectPath + '/' + LARAVEL_PUBLIC_DIR, {mkdirp: true}, function(error){
+              console.log('MERGE RESULT');
+              if(error){
+                console.error(error);
+              }else{
+                console.log('MERGED');
+              }
+            });*/
+
+            /*console.log('Removing old files');
+            // remove the zipped Foundation folder
+            rimraf(downloadPath + '.' + FOUNDATION_FILE_EXT, function(){
+              console.log(arguments);
+            });*/
+            // remove the unzipped Foundation folder
+            //rimraf(projectPath + '/' + FOUNDATION_FILENAME);
+
+
+            //process.exit();
           },
           errorHandler
         );

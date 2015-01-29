@@ -24,7 +24,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "tar.gz": "latest"
+    "tar.gz": "latest",
+    "mv": "2.0.3",
+    "rimraf":"2.2.8",
+    "node-merge":"latest"
   },
   "preferGlobal": true,
   "private": true
