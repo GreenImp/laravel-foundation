@@ -113,6 +113,12 @@ var errorHandler          = function(errors){
             }
           });
     },
+    /**
+     * @param {string} src
+     * @param {string} dest
+     * @param {function=} successCallback
+     * @param {function=} errorCallback
+     */
     extract               = function(src, dest, successCallback, errorCallback){
       console.log('Extracting file: %s', src);
 
