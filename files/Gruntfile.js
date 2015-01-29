@@ -2,6 +2,8 @@
 module.exports = function(grunt) {
   // Initializing the configuration object
   grunt.initConfig({
+    pkg: grunt.file.readJSON('package.json'),
+    
     // Paths variables
     paths: {
       // Development file locations (Where we put SASS files etc.)

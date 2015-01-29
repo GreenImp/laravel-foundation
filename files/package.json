@@ -1,33 +1,10 @@
 {
-  "name": "laravelTutorial",
-  "version": "0.1.0",
-  "description": "This is a Laravel with Grunt, Bower, Foundation and Sass Tutorial made by @gabidavila: http://gabriela.io",
-  "main": "Gruntfile.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:gabidavila/laravel-grunt-bower-foundation.git"
-  },
-  "keywords": [
-    "laravel",
-    "grunt",
-    "foundation",
-    "sass",
-    "bower"
-  ],
-  "author": "Gabriela D'Avila &lt;gabidavila&gt;",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/gabidavila/laravel-grunt-bower-foundation/issues"
-  },
-  "homepage": "https://github.com/gabidavila/laravel-grunt-bower-foundation",
+  "name": "foundation-libsass-template",
+  "version": "0.0.1",
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-uglify": "^0.7.0",
     "grunt-contrib-watch": "^0.6.1",
-    "grunt-sass": "^0.17.0",
-    "node-sass": "^2.0.0-beta"
+    "grunt-sass": "^0.17.0"
   }
 }
