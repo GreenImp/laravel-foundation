@@ -246,6 +246,26 @@ var errorHandler          = function(errors){
 
 
 var init  = {
+  /**
+   * Installs the dependencies required
+   * so that a project can be created.
+   *
+   * If dependencies aren't installed,
+   * the general init functions will fail!
+   *
+   * @param callback
+   */
+  dependencies: function(callback){
+    /*[Grunt](http://gruntjs.com/): Run `[sudo] npm install -g grunt-cli`
+    * [Bower](http://bower.io): Run `[sudo] npm install -g bower`
+    * [Composer](https://getcomposer.org/): See https://getcomposer.org/download/*/
+   },
+  /**
+   * Installs a Laravel project
+   *
+   * @link http://laravel.com/docs/quick
+   * @param callback
+   */
   laravel: function(callback){
     // check if the project directory already exists
     if(doesProjectExist()){
@@ -269,6 +289,12 @@ var init  = {
       }
     });
   },
+  /**
+   * Adds Foundation (libsass) to the project
+   *
+   * @link http://foundation.zurb.com/docs/sass.html
+   * @param callback
+   */
   foundation: function(callback){
     console.log(LOG_DIVIDER);
     console.log('# Setting up Foundation');
@@ -366,6 +392,13 @@ var init  = {
       errorHandler
     );
   },
+  /**
+   * Creates .bowerrc and
+   * installs bower modules
+   *
+   * @link http://bower.io/#getting-started
+   * @param callback
+   */
   bower: function(callback){
     console.log(LOG_DIVIDER);
     console.log('# Setting up Bower');
@@ -389,16 +422,56 @@ var init  = {
       errorHandler
     );
   },
-  all: function(){
-    // install Laravel
-    init.laravel(function(){
-      // install Foundation
-      init.foundation(function(){
-        init.bower();
-      });
+  /**
+   * Installs Grunt dependencies
+   * and creates Gruntfile.js
+   *
+   * @param callback
+   */
+  grunt: function(callback){
+    console.log(LOG_DIVIDER);
+    console.log('# Setting up Grunt dependencies');
 
-      // set up NPM
-      //execHandler('npm init -f', function(){});
+    // copy `Gruntfile.js` file into project root
+    copyFile(
+      SCRIPT_PATH + '/files/Gruntfile.js', projectPath + '/Gruntfile.js',
+      function(){
+        // ensure that we're in the project directory
+        goToProjectDir();
+
+        // list of extra grunt dependencies
+        var gruntDpdcy = [
+          {
+            'grunt-contrib-uglify': 'latest'
+          }
+        ];
+
+
+        execHandler('npm install ' + gruntDpdcy.join(' ') + ' --save', function(){
+          console.log('Grunt dependencies installed');
+
+          if(callback){
+            callback();
+          }
+        });
+      },
+      errorHandler
+    );
+  },
+  all: function(){
+    init.dependencies(function(){
+      // install Laravel
+      init.laravel(function(){
+        // install Foundation
+        init.foundation(function(){
+          init.bower(function(){
+            init.grunt();
+          });
+        });
+
+        // set up NPM
+        //execHandler('npm init -f', function(){});
+      });
     });
   }
 };

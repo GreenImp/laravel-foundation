@@ -10,6 +10,7 @@ You'll need to have the following items installed before continuing.
   * [Node.js](http://nodejs.org): Use the installer provided on the NodeJS website.
   * [Grunt](http://gruntjs.com/): Run `[sudo] npm install -g grunt-cli`
   * [Bower](http://bower.io): Run `[sudo] npm install -g bower`
+  * [Composer](https://getcomposer.org/): See https://getcomposer.org/download/
 
 
 ## Quickstart
@@ -60,11 +61,11 @@ It will use the details in Foundation's package.json
 
 ### Grunt
 
-Install [Grunt](http://gruntjs.com/) and the required plugins
+Install [Grunt](http://gruntjs.com/) and the required plugins - add the following as a dependency in the `package.json` file:
 
-    $ sudo npm install grunt grunt-contrib-uglify
+    grunt-contrib-uglify
 
-**See how to automatically install dependencies from `package.json` file**
+**`npm install` will automatically install dependencies from `package.json` file**
 
 
 Create `/Gruntfile.js`. See `/files/Gruntfile.js`
