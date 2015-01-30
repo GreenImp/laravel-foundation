@@ -26,8 +26,8 @@
   "dependencies": {
     "tar.gz": "latest",
     "mv": "2.0.3",
-    "rimraf":"2.2.8",
-    "node-merge":"latest"
+    "rimraf": "2.2.8",
+    "node-merge": "git://github.com/GreenImp/node-merge.git"
   },
   "preferGlobal": true,
   "private": true
