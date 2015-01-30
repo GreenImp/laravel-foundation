@@ -23,6 +23,8 @@ var projectName       = process.argv[2] || 'laravel-foundation',                
 const LOG_DIVIDER             = '====================================';
 
 
+const SCRIPT_PATH             = __dirname;  // path to this script
+
 const LARAVEL_PUBLIC_DIR      = 'public';
 
 const FOUNDATION_FILE_EXT     = 'tar.gz';
@@ -188,6 +190,31 @@ var errorHandler          = function(errors){
         });
       }
     },
+    copyFile              = function(src, dest, successCallback, errorCallback){
+      var cbCalled = false;
+
+      var rd = fs.createReadStream(src);
+      rd.on("error", done);
+
+      var wr = fs.createWriteStream(dest);
+      wr.on("error", done);
+      wr.on("close", function(ex){
+        done();
+      });
+      rd.pipe(wr);
+
+      function done(err){
+        if(!cbCalled){
+          cbCalled = true;
+
+          if(err){
+            errorCallback(err);
+          }else{
+            successCallback();
+          }
+        }
+      }
+    },
     /**
      * Checks if the project directory
      * already exists or not
@@ -339,11 +366,36 @@ var init  = {
       errorHandler
     );
   },
+  bower: function(callback){
+    console.log(LOG_DIVIDER);
+    console.log('# Setting up Bower');
+
+    // copy `.bowerrc` file into project root
+    copyFile(
+      SCRIPT_PATH + '/files/.bowerrc', projectPath + '/.bowerrc',
+      function(){
+        // ensure that we're in the project directory
+        goToProjectDir();
+
+        // install the bower modules
+        execHandler('bower install', function(){
+          console.log('Bower modules installed');
+
+          if(callback){
+            callback();
+          }
+        });
+      },
+      errorHandler
+    );
+  },
   all: function(){
     // install Laravel
     init.laravel(function(){
       // install Foundation
-      init.foundation();
+      init.foundation(function(){
+        init.bower();
+      });
 
       // set up NPM
       //execHandler('npm init -f', function(){});
