@@ -15,7 +15,7 @@ var exec    = require('child_process').exec,
 
 
 
-var projectName       = process.argv[2] || 'laravel-foundation',                                      // project name - used for directory name
+var projectName       = process.argv[2],                                                              // project name - used for directory name
     projectPathParent = process.argv[3] || process.cwd().replace(new RegExp(projectName + '$'), '');  // path to the parent directory of the project
     projectPath       = projectPathParent + '/' + projectName;                                        // path to the project directory
 
@@ -253,7 +253,7 @@ var init  = {
    * If dependencies aren't installed,
    * the general init functions will fail!
    *
-   * @param callback
+   * @param {function=} callback
    */
   dependencies: function(callback){
     /*[Grunt](http://gruntjs.com/): Run `[sudo] npm install -g grunt-cli`
@@ -264,7 +264,7 @@ var init  = {
    * Installs a Laravel project
    *
    * @link http://laravel.com/docs/quick
-   * @param callback
+   * @param {function=} callback
    */
   laravel: function(callback){
     // check if the project directory already exists
@@ -293,7 +293,7 @@ var init  = {
    * Adds Foundation (libsass) to the project
    *
    * @link http://foundation.zurb.com/docs/sass.html
-   * @param callback
+   * @param {function=} callback
    */
   foundation: function(callback){
     console.log(LOG_DIVIDER);
@@ -397,7 +397,7 @@ var init  = {
    * installs bower modules
    *
    * @link http://bower.io/#getting-started
-   * @param callback
+   * @param {function=} callback
    */
   bower: function(callback){
     console.log(LOG_DIVIDER);
@@ -426,7 +426,7 @@ var init  = {
    * Installs Grunt dependencies
    * and creates Gruntfile.js
    *
-   * @param callback
+   * @param {function=} callback
    */
   grunt: function(callback){
     console.log(LOG_DIVIDER);
@@ -477,6 +477,12 @@ var init  = {
 };
 
 
+
+
+if(!projectName){
+  // no project name defined
+  errorHandler('No project name defined');
+}
 
 
 console.log('Project directory: %s', projectPath);
