@@ -1,6 +1,0 @@
-{
-  "name": "laravelTutorial",
-  "dependencies": {
-    "foundation": "zurb/bower-foundation#~5.5.0"
-  }
-}
