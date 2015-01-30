@@ -121,6 +121,8 @@ var errorHandler          = function(errors){
           });
     },
     /**
+     * Extracts a zipped file
+     *
      * @param {string} src
      * @param {string} dest
      * @param {function=} successCallback
@@ -136,6 +138,55 @@ var errorHandler          = function(errors){
           successCallback();
         }
       });
+    },
+    /**
+     * Deletes a file or directory.
+     * `file` can be an array of files/directories.
+     *
+     * @param {string|Array} file
+     * @param {function} successCallback
+     * @param {function} errorCallback
+     */
+    deleteFile            = function(file, successCallback, errorCallback){
+      if(Array.isArray(file)){
+        file.forEach(function(f){
+          deleteFile(f, successCallback, errorCallback);
+        });
+      }else{
+        rimraf(file, function(err){
+          if(err){
+            errorCallback(err);
+          }else{
+            successCallback();
+          }
+        });
+      }
+    },
+    /**
+     * Moves a file or directory.
+     * `file` can be an array of files/directories.
+     *
+     * @param {object|Array} file
+     * @param {object=} options
+     * @param {function} successCallback
+     * @param {function} errorCallback
+     */
+    moveFile              = function(file, options, successCallback, errorCallback){
+      if(Array.isArray(file)){
+        file.forEach(function(f){
+          moveFile(f, options, successCallback, errorCallback);
+        })
+      }else{
+        console.log('Moving file', file.src + ' -> ' + file.dest);
+
+        mv(file.src, file.dest, options || {}, function(err){
+          if(err){
+            errorCallback(err);
+          }else{
+            successCallback();
+          }
+        });
+      }
     },
     /**
      * Checks if the project directory
@@ -195,9 +246,9 @@ var init  = {
     console.log(LOG_DIVIDER);
     console.log('# Setting up Foundation');
 
-    var downloadPath  = projectPath + '/' + FOUNDATION_FILENAME,
-        extractPath   = projectPath + '/' + FOUNDATION_FILENAME,
-        exrtactInt    = extractPath + '/' + FOUNDATION_INT_FILENAME;
+    var downloadPath  = projectPath + '/' + FOUNDATION_FILENAME,  // path to download foundation
+        extractPath   = projectPath + '/' + FOUNDATION_FILENAME,  // path to extract the download
+        publicPath    = projectPath + '/' + LARAVEL_PUBLIC_DIR;   // path to the Laravel public directory
 
     // download foundation and copy across any required files
     download(
@@ -213,27 +264,74 @@ var init  = {
           function(){
             console.log('Merging Foundation into Laravel');
 
-            merge.mergeTo(exrtactInt, projectPath + '/' + LARAVEL_PUBLIC_DIR);
+            var count, fileList;
 
-            /*mv(exrtactInt, projectPath + '/' + LARAVEL_PUBLIC_DIR, {mkdirp: true}, function(error){
-              console.log('MERGE RESULT');
-              if(error){
-                console.error(error);
-              }else{
-                console.log('MERGED');
+
+            // copy the Foundation files into the Laravel public directory
+            // mergeTo is Synchronous!
+            merge.mergeTo(extractPath + '/' + FOUNDATION_INT_FILENAME, publicPath);
+
+            // move the files into the correct locations
+            count     = 0;
+            fileList  = [
+              // move the JS into the assets directory
+              {
+                src: publicPath + '/js',
+                dest: publicPath + '/assets/js'
+              },
+              // move the SCSS into the assets directory
+              {
+                src: publicPath + '/scss',
+                dest: publicPath + '/assets/scss'
+              },
+              // move the bower file into the project root
+              {
+                src: publicPath + '/bower.json',
+                dest: projectPath + '/bower.json'
               }
-            });*/
+            ];
+            moveFile(
+              fileList,
+              {mkdirp: true},
+              function(){
+                count++;
 
-            /*console.log('Removing old files');
-            // remove the zipped Foundation folder
-            rimraf(downloadPath + '.' + FOUNDATION_FILE_EXT, function(){
-              console.log(arguments);
-            });*/
-            // remove the unzipped Foundation folder
-            //rimraf(projectPath + '/' + FOUNDATION_FILENAME);
+                if(count >= fileList.length){
+                  // all files moved
 
+                  console.log('Removing old files');
+                  // remove the unnecessary Foundation files
+                  count     = 0;
+                  fileList  = [
+                    // zipped Foundation folder
+                    downloadPath + '.' + FOUNDATION_FILE_EXT,
+                    // extracted Foundation folder
+                    extractPath,
+                    // Foundation's Gruntfile
+                    publicPath + '/Gruntfile.js',
+                    // Foundation's Readme (Not relevant)
+                    publicPath + '/README.md'
+                  ];
+                  deleteFile(
+                    fileList,
+                    function(){
+                      count++;
 
-            //process.exit();
+                      if(count >= fileList.length){
+                        // all files deleted
+                        console.log('Foundation installed');
+
+                        if(callback){
+                          callback();
+                        }
+                      }
+                    },
+                    errorHandler
+                  );
+                }
+              },
+              errorHandler
+            );
           },
           errorHandler
         );
