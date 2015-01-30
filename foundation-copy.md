@@ -9,3 +9,5 @@
 * scss          -> public/assets/scss
 
 Once Foundation is installed, via bower, we need to copy the `_settings.scss` file to public/assets/scss
+
+public/assets/vendor/foundation/scss/foundation/_settings.scss -> public/assets/scss/_settings.scss
