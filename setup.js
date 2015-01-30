@@ -10,7 +10,8 @@ var exec    = require('child_process').exec,
     targz   = require('tar.gz'),
     http    = require('http'),
     https   = require('https'),
-    url     = require('url');
+    url     = require('url'),
+    printf  = require('util').format;
 
 
 
@@ -155,6 +156,8 @@ var errorHandler          = function(errors){
           deleteFile(f, successCallback, errorCallback);
         });
       }else{
+        console.log('Deleting file: %s', file);
+
         rimraf(file, function(err){
           if(err){
             errorCallback(err);
@@ -179,7 +182,7 @@ var errorHandler          = function(errors){
           moveFile(f, options, successCallback, errorCallback);
         })
       }else{
-        console.log('Moving file', file.src + ' -> ' + file.dest);
+        console.log('Moving file: %s -> %s', file.src, file.dest);
 
         mv(file.src, file.dest, options || {}, function(err){
           if(err){
@@ -191,14 +194,16 @@ var errorHandler          = function(errors){
       }
     },
     copyFile              = function(src, dest, successCallback, errorCallback){
+      console.log('Copying file: %s -> %s', src, dest);
+
       var cbCalled = false;
 
       var rd = fs.createReadStream(src);
-      rd.on("error", done);
+      rd.on('error', done);
 
       var wr = fs.createWriteStream(dest);
-      wr.on("error", done);
-      wr.on("close", function(ex){
+      wr.on('error', done);
+      wr.on('close', function(ex){
         done();
       });
       rd.pipe(wr);
@@ -259,7 +264,11 @@ var init  = {
     /*[Grunt](http://gruntjs.com/): Run `[sudo] npm install -g grunt-cli`
     * [Bower](http://bower.io): Run `[sudo] npm install -g bower`
     * [Composer](https://getcomposer.org/): See https://getcomposer.org/download/*/
-   },
+
+    if(callback){
+      callback();
+    }
+  },
   /**
    * Installs a Laravel project
    *
@@ -281,7 +290,7 @@ var init  = {
 
     // run the Laravel install command
     // TODO - should we use Composer, so that Laravel doesn't need to be installed?
-    execHandler('laravel new ' + projectName, function(){
+    execHandler(printf('laravel new %s', projectName), function(){
       console.log('Laravel installed');
 
       if(callback){
@@ -405,7 +414,8 @@ var init  = {
 
     // copy `.bowerrc` file into project root
     copyFile(
-      SCRIPT_PATH + '/files/.bowerrc', projectPath + '/.bowerrc',
+      SCRIPT_PATH + '/files/.bowerrc',
+      projectPath + '/.bowerrc',
       function(){
         // ensure that we're in the project directory
         goToProjectDir();
@@ -434,7 +444,8 @@ var init  = {
 
     // copy `Gruntfile.js` file into project root
     copyFile(
-      SCRIPT_PATH + '/files/Gruntfile.js', projectPath + '/Gruntfile.js',
+      SCRIPT_PATH + '/files/Gruntfile.js',
+      projectPath + '/Gruntfile.js',
       function(){
         // ensure that we're in the project directory
         goToProjectDir();
@@ -447,7 +458,7 @@ var init  = {
         ];
 
 
-        execHandler('npm install ' + gruntDpdcy.join(' ') + ' --save', function(){
+        execHandler(printf('npm install %s --save', gruntDpdcy.join(' ')), function(){
           console.log('Grunt dependencies installed');
 
           if(callback){
