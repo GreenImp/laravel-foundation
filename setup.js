@@ -3,6 +3,7 @@
 
 // include required modules
 var exec    = require('child_process').exec,
+    spawn   = require('child_process').spawn,
     fs      = require('fs'),
     mv      = require('mv'),
     rimraf  = require('rimraf'),
@@ -38,8 +39,11 @@ const FOUNDATION_REPO_URL     = 'https://codeload.github.com/zurb/foundation-lib
 var errorHandler          = function(errors){
       var i;
 
-      // ensure `errors` is an array
-      if(!Array.isArray(errors)){
+      if(!errors){
+        // no errors defined - create a default
+        errors = ['An error has occurred, please check the output above'];
+      }else if(!Array.isArray(errors)){
+        // ensure that the errors is an array
         errors = [errors];
       }
 
@@ -68,6 +72,32 @@ var errorHandler          = function(errors){
           successCallback.call(this, stdout);
         }
       });
+    },
+    /**
+     * Handles `spawn` commands
+     *
+     * @param {string} command
+     * @param {Array=} arguments
+     * @param {object=} options
+     * @param {function=} successCallback
+     * @param {function=} errorCallback
+     * @returns {*}
+     */
+    spawnHandler          = function(command, arguments, options, successCallback, errorCallback){
+      // TODO - merge options with out default
+      var s = spawn(command, arguments || [], {stdio: 'inherit'});
+
+      // assign any callbacks
+      s.on('close', function(code){
+        if(code === 0){
+          // success
+          successCallback();
+        }else{
+          errorCallback();
+        }
+      });
+
+      return s;
     },
     /**
      * Determines which request handler (http | https)
@@ -289,17 +319,19 @@ var init  = {
     goToDir(projectPathParent);
 
     // run the Laravel install command
-    /**
-     * Using ansi flag to preserve output colours
-     * @link http://stackoverflow.com/a/18830349
-     */
-    execHandler(printf('composer create-project laravel/laravel %s --prefer-dist --ansi', projectName), function(){
-      console.log('Laravel installed');
+    spawnHandler(
+      'composer',
+      ['create-project', 'laravel/laravel', projectName, '--prefer-dist'],
+      null,
+      function(){
+        console.log('Laravel installed');
 
-      if(callback){
-        callback();
-      }
-    });
+        if(callback){
+          callback();
+        }
+      },
+      errorHandler
+    );
   },
   /**
    * Adds Foundation (libsass) to the project
@@ -425,13 +457,19 @@ var init  = {
 
         // install the bower modules
         console.log('Installing Bower modules');
-        execHandler('bower install', function(){
-          console.log('Bower setup complete');
+        spawnHandler(
+          'bower',
+          ['install'],
+          null,
+          function(){
+            console.log('Bower setup complete');
 
-          if(callback){
-            callback();
-          }
-        });
+            if(callback){
+              callback();
+            }
+          },
+          errorHandler
+        );
       },
       errorHandler
     );
@@ -463,13 +501,19 @@ var init  = {
           }
         ];
 
-        execHandler(printf('npm install %s --save', gruntDpdcy.join(' ')), function(){
-          console.log('Grunt dependencies installed');
+        spawnHandler(
+          'npm',
+          ['install', gruntDpdcy.join(' '), '--save'],
+          null,
+          function(){
+            console.log('Grunt dependencies installed');
 
-          if(callback){
-            callback();
-          }
-        });
+            if(callback){
+              callback();
+            }
+          },
+          errorHandler()
+        );
       },
       errorHandler
     );
@@ -486,7 +530,7 @@ var init  = {
         });
 
         // set up NPM
-        //execHandler('npm init -f', function(){});
+        //spawnHandler('npm', ['init', '-f'], null, function(){}, errorHandler);
       });
     });
   }
