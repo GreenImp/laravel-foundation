@@ -85,6 +85,12 @@ var errorHandler          = function(errors){
      */
     spawnHandler          = function(command, arguments, options, successCallback, errorCallback){
       // TODO - merge options with out default
+      /**
+       * Setting `stdio` to 'inherit', to preserve output colours.
+       *
+       * @link http://stackoverflow.com/a/14231570
+       * @type {*}
+       */
       var s = spawn(command, arguments || [], {stdio: 'inherit'});
 
       // assign any callbacks
