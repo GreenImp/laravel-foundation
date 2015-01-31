@@ -11,6 +11,7 @@ You'll need to have the following items installed before continuing.
   * [Grunt](http://gruntjs.com/): Run `[sudo] npm install -g grunt-cli`
   * [Bower](http://bower.io): Run `[sudo] npm install -g bower`
   * [Composer](https://getcomposer.org/): See https://getcomposer.org/download/
+  * [Mcrypt](http://php.net/manual/en/book.mcrypt.php): See http://stackoverflow.com/questions/24298722/error-script-php-artisan-clear-compiled-handling-the-post-install-cmd-event-ret
 
 
 ## Quickstart
