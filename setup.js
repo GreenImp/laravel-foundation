@@ -61,11 +61,11 @@ var errorHandler          = function(errors){
      * @param {function=} errorCallback
      */
     execHandler           = function(str, successCallback, errorCallback){
-      exec(str, function(error, out, code){
-        if(error || code){
-          (errorCallback || errorHandler).call(this, [code, error, out]);
+      exec(str, function(error, stdout, stderr){
+        if(error !== null){
+          (errorCallback || errorHandler).call(this, [printf('Code: %s', error.code), stderr]);
         }else if(successCallback){
-          successCallback.call(this, out);
+          successCallback.call(this, stdout);
         }
       });
     },
@@ -289,8 +289,11 @@ var init  = {
     goToDir(projectPathParent);
 
     // run the Laravel install command
-    // TODO - should we use Composer, so that Laravel doesn't need to be installed?
-    execHandler(printf('laravel new %s', projectName), function(){
+    /**
+     * Using ansi flag to preserve output colours
+     * @link http://stackoverflow.com/a/18830349
+     */
+    execHandler(printf('composer create-project laravel/laravel %s --prefer-dist --ansi', projectName), function(){
       console.log('Laravel installed');
 
       if(callback){
@@ -324,7 +327,7 @@ var init  = {
           downloadPath + '.' + FOUNDATION_FILE_EXT,
           projectPath + '/' + FOUNDATION_FILENAME,
           function(){
-            console.log('Merging Foundation into Laravel');
+            console.log('\nMerging Foundation into Laravel');
 
             var count, fileList;
 
@@ -421,8 +424,9 @@ var init  = {
         goToProjectDir();
 
         // install the bower modules
+        console.log('Installing Bower modules');
         execHandler('bower install', function(){
-          console.log('Bower modules installed');
+          console.log('Bower setup complete');
 
           if(callback){
             callback();
@@ -440,7 +444,7 @@ var init  = {
    */
   grunt: function(callback){
     console.log(LOG_DIVIDER);
-    console.log('# Setting up Grunt dependencies');
+    console.log('# Setting up Grunt');
 
     // copy `Gruntfile.js` file into project root
     copyFile(
@@ -450,13 +454,14 @@ var init  = {
         // ensure that we're in the project directory
         goToProjectDir();
 
+        console.log('Installing Grunt dependencies');
+
         // list of extra grunt dependencies
         var gruntDpdcy = [
           {
             'grunt-contrib-uglify': 'latest'
           }
         ];
-
 
         execHandler(printf('npm install %s --save', gruntDpdcy.join(' ')), function(){
           console.log('Grunt dependencies installed');
