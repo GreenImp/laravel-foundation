@@ -51,22 +51,22 @@ Run
     $ bower install
 
 
+### Grunt
+
+Install [Grunt](http://gruntjs.com/) and the required plugins:
+
+    $ npm install grunt-contrib-uglify --save
+
+
+Create `/Gruntfile.js`. See `/files/Gruntfile.js`
+
+
 ### Node
 
-**I'M NOT SURE IF NPM IS REQUIRED NOW. This may install the grunt dependancies**
+**I'M NOT SURE IF NPM init IS REQUIRED NOW**
 
     $ npm init -f
 
 It will use the details in Foundation's package.json
 
 **`npm install` will automatically install dependencies from `package.json` file**
-
-
-### Grunt
-
-Install [Grunt](http://gruntjs.com/) and the required plugins:
-
-    npm install grunt-contrib-uglify --save
-
-
-Create `/Gruntfile.js`. See `/files/Gruntfile.js`
