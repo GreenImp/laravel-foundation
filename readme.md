@@ -59,14 +59,14 @@ Run
 
 It will use the details in Foundation's package.json
 
+**`npm install` will automatically install dependencies from `package.json` file**
+
 
 ### Grunt
 
-Install [Grunt](http://gruntjs.com/) and the required plugins - add the following as a dependency in the `package.json` file:
+Install [Grunt](http://gruntjs.com/) and the required plugins:
 
-    grunt-contrib-uglify
-
-**`npm install` will automatically install dependencies from `package.json` file**
+    npm install grunt-contrib-uglify --save
 
 
 Create `/Gruntfile.js`. See `/files/Gruntfile.js`
