@@ -24,6 +24,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "sudo": "latest",
     "tar.gz": "latest",
     "mv": "2.0.3",
     "rimraf": "2.2.8",

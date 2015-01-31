@@ -4,6 +4,7 @@
 // include required modules
 var exec    = require('child_process').exec,
     spawn   = require('child_process').spawn,
+    sudo    = require('sudo'),
     fs      = require('fs'),
     mv      = require('mv'),
     rimraf  = require('rimraf'),
@@ -84,6 +85,12 @@ var errorHandler          = function(errors){
      * @returns {*}
      */
     spawnHandler          = function(command, arguments, options, successCallback, errorCallback){
+      var cmd,
+          useRoot = options && options.sudo,
+          sudoOps = {
+            cachePassword: true
+          };
+
       // TODO - merge options with out default
       /**
        * Setting `stdio` to 'inherit', to preserve output colours.
@@ -91,10 +98,24 @@ var errorHandler          = function(errors){
        * @link http://stackoverflow.com/a/14231570
        * @type {*}
        */
-      var s = spawn(command, arguments || [], {stdio: 'inherit'});
+      options = {stdio: 'inherit'};
+
+      if(useRoot){
+        // store the spawn options
+        sudoOps.spawnOptions = options;
+
+        // sudo requires the command to be the first in the arguments list
+        (arguments || []).unshift(command);
+
+        // run as sudo
+        cmd = sudo(arguments, sudoOps);
+      }else{
+        // run as user
+        cmd = spawn(command, arguments || [], options);
+      }
 
       // assign any callbacks
-      s.on('close', function(code){
+      cmd.on('close', function(code){
         if(code === 0){
           // success
           successCallback();
@@ -103,7 +124,7 @@ var errorHandler          = function(errors){
         }
       });
 
-      return s;
+      return cmd;
     },
     /**
      * Determines which request handler (http | https)
@@ -282,6 +303,30 @@ var errorHandler          = function(errors){
      */
     goToProjectDir        = function(){
       goToDir(projectPath);
+    },
+    getExecPath           = function(exec, callback){
+      execHandler(
+        printf('which %s', exec),
+        function(stdout){
+          callback(stdout.split('\n')[0]);
+        },
+        errorHandler
+      );
+    },
+    isNodeRoot            = function(callback){
+      // determine the path to node, so we can check permissions
+      // TODO - check this functionality on Windows & Mac
+      getExecPath('node', function(path){
+        // get the file stats
+        fs.stat(path, function(err, stats){
+          if(err){
+            errorHandler(err);
+          }else{
+            // return result
+            callback(stats.uid == 0);
+          }
+        });
+      });
     };
 
 
@@ -498,26 +543,31 @@ var init  = {
         // ensure that we're in the project directory
         goToProjectDir();
 
-        console.log('Installing Grunt dependencies');
+        console.log('Installing Grunt dependencies (May require Root privileges)');
 
-        // list of extra grunt dependencies
-        var gruntDpdcy = [
-          'grunt-contrib-uglify'
-        ];
+        // check if Node needs to be run as root to install dependencies
+        isNodeRoot(function(isRoot){
+          // list of extra grunt dependencies
+          var gruntDpdcy = [
+            'grunt-contrib-uglify'
+          ];
 
-        spawnHandler(
-          'npm',
-          ['install', gruntDpdcy.join(' '), '--save'],
-          null,
-          function(){
-            console.log('Grunt dependencies installed');
+          spawnHandler(
+            'npm',
+            ['install', gruntDpdcy.join(' '), '--save'],
+            {
+              sudo: isRoot
+            },
+            function(){
+              console.log('Grunt dependencies installed');
 
-            if(callback){
-              callback();
-            }
-          },
-          errorHandler
-        );
+              if(callback){
+                callback();
+              }
+            },
+            errorHandler
+          );
+        });
       },
       errorHandler
     );
