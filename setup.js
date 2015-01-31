@@ -496,9 +496,7 @@ var init  = {
 
         // list of extra grunt dependencies
         var gruntDpdcy = [
-          {
-            'grunt-contrib-uglify': 'latest'
-          }
+          'grunt-contrib-uglify'
         ];
 
         spawnHandler(
@@ -512,7 +510,7 @@ var init  = {
               callback();
             }
           },
-          errorHandler()
+          errorHandler
         );
       },
       errorHandler
