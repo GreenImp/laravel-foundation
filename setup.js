@@ -644,6 +644,7 @@ var init  = {
         init.foundation(function(){
           init.bower(function(){
             init.grunt(function(){
+              console.log(LOG_DIVIDER);
               console.log('# Setup complete, happy coding :)');
             });
           });
