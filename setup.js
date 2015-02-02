@@ -339,16 +339,80 @@ var init  = {
    * If dependencies aren't installed,
    * the general init functions will fail!
    *
+   * @param {boolean=} global
    * @param {function=} callback
    */
-  dependencies: function(callback){
-    /*[Grunt](http://gruntjs.com/): Run `[sudo] npm install -g grunt-cli`
-    * [Bower](http://bower.io): Run `[sudo] npm install -g bower`
-    * [Composer](https://getcomposer.org/): See https://getcomposer.org/download/*/
+  dependencies: function(global, callback){
+    /* [Grunt](http://gruntjs.com/): Run `[sudo] npm install -g grunt-cli`
+     * [Bower](http://bower.io): Run `[sudo] npm install -g bower`
+     * [Composer](https://getcomposer.org/): See https://getcomposer.org/download/
+     */
+    console.log(LOG_DIVIDER);
+    console.log('# Installing Dependency software');
 
-    if(callback){
-      callback();
-    }
+    var software  = {
+      grunt: function(global, callback){
+        console.log('# Installing Grunt' + (global ? ' Globally' : '') + ' (May require Root privileges)');
+
+        var args  = ['install'];
+        if(global){
+          args.push('-g');
+        }
+        args.push('grunt-cli');
+
+        // check if Node needs to be run as root to install dependencies
+        isNodeRoot(function(isRoot){
+          spawnHandler(
+            'npm',
+            args,
+            {
+              sudo: isRoot
+            },
+            function(){
+              console.log('Grunt installed');
+
+              if(callback){
+                callback();
+              }
+            },
+            errorHandler
+          );
+        });
+      },
+      bower: function(global, callback){
+        console.log('# Installing Bower' + (global ? ' Globally' : '') + ' (May require Root privileges)');
+
+        var args  = ['install'];
+        if(global){
+          args.push('-g');
+        }
+        args.push('bower');
+
+        // check if Node needs to be run as root to install dependencies
+        isNodeRoot(function(isRoot){
+          spawnHandler(
+            'npm',
+            args,
+            {
+              sudo: isRoot
+            },
+            function(){
+              console.log('Bower installed');
+
+              if(callback){
+                callback();
+              }
+            },
+            errorHandler
+          );
+        });
+      }
+    };
+
+
+    software.grunt(global, function(){
+      software.bower(global, callback);
+    });
   },
   /**
    * Installs a Laravel project
@@ -572,14 +636,16 @@ var init  = {
       errorHandler
     );
   },
-  all: function(){
-    init.dependencies(function(){
+  all: function(global){
+    init.dependencies(global, function(){
       // install Laravel
       init.laravel(function(){
         // install Foundation
         init.foundation(function(){
           init.bower(function(){
-            init.grunt();
+            init.grunt(function(){
+              console.log('# Setup complete, happy coding :)');
+            });
           });
         });
 
@@ -602,4 +668,4 @@ if(!projectName){
 console.log('Project directory: %s', projectPath);
 
 // run the initialisation scripts
-init.all();
+init.all(true);
