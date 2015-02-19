@@ -91,7 +91,7 @@ var errorHandler          = function(errors){
             cachePassword: true
           };
 
-      // TODO - merge options with out default
+      // TODO - merge options with our default
       /**
        * Setting `stdio` to 'inherit', to preserve output colours.
        *
@@ -327,6 +327,79 @@ var errorHandler          = function(errors){
           }
         });
       });
+    },
+    installNPMModules     = function(modules, options, callback){
+      if(!modules){
+        if(callback){
+          callback();
+        }else{
+          return;
+        }
+      }
+
+      // check if modules is an object
+      if(typeof modules === 'object'){
+        // if modules in not an array, it must be a name -> version key pair list
+        if(!Array.isArray(modules)){
+          // loop through and convert the object to an array
+          var moduleArray = [];
+          for(var module in modules){
+            if(modules.hasOwnProperty(module)){
+              moduleArray.push(module + '@' + modules[module]);
+            }
+          }
+
+          modules = moduleArray;
+        }
+      }else{
+        // modules is not an object - convert to an array
+        modules = [modules];
+      }
+
+      // ensure that `modules` is an array
+      modules = Array.isArray(modules) ? modules : [modules];
+
+      console.log('Installing Node modules:');
+      console.log(modules.join(' '));
+
+      // check if Node needs to be run as root to install dependencies
+      isNodeRoot(function(isRoot){
+        // build the arguments
+        var args = [
+          'install'
+        ];
+
+        // check global flag
+        if(options.global){
+          args.push('-g');
+        }
+
+        // add the modules
+        args.push.apply(args, modules);
+
+        if(options.saveDev){
+          args.push('--save-dev');
+        }else if(options.save){
+          args.push('--save');
+        }
+
+        // install the modules
+        spawnHandler(
+          'npm',
+          args,
+          {
+            sudo: isRoot
+          },
+          function(){
+            console.log('Node modules installed');
+
+            if(callback){
+              callback();
+            }
+          },
+          errorHandler
+        );
+      });
     };
 
 
@@ -354,58 +427,36 @@ var init  = {
       grunt: function(global, callback){
         console.log('# Installing Grunt' + (global ? ' Globally' : '') + ' (May require Root privileges)');
 
-        var args  = ['install'];
-        if(global){
-          args.push('-g');
-        }
-        args.push('grunt-cli');
+        installNPMModules(
+          'grunt-cli',
+          {
+            global: true
+          },
+          function(){
+            console.log('Grunt installed');
 
-        // check if Node needs to be run as root to install dependencies
-        isNodeRoot(function(isRoot){
-          spawnHandler(
-            'npm',
-            args,
-            {
-              sudo: isRoot
-            },
-            function(){
-              console.log('Grunt installed');
-
-              if(callback){
-                callback();
-              }
-            },
-            errorHandler
-          );
-        });
+            if(callback){
+              callback();
+            }
+          }
+        );
       },
       bower: function(global, callback){
         console.log('# Installing Bower' + (global ? ' Globally' : '') + ' (May require Root privileges)');
 
-        var args  = ['install'];
-        if(global){
-          args.push('-g');
-        }
-        args.push('bower');
+        installNPMModules(
+          'bower',
+          {
+            global: true
+          },
+          function(){
+            console.log('Bower installed');
 
-        // check if Node needs to be run as root to install dependencies
-        isNodeRoot(function(isRoot){
-          spawnHandler(
-            'npm',
-            args,
-            {
-              sudo: isRoot
-            },
-            function(){
-              console.log('Bower installed');
-
-              if(callback){
-                callback();
-              }
-            },
-            errorHandler
-          );
-        });
+            if(callback){
+              callback();
+            }
+          }
+        );
       },
       composer: function(global, callback){
         // TODO - check this in Windows
@@ -515,6 +566,9 @@ var init  = {
         extractPath   = projectPath + '/' + FOUNDATION_FILENAME,  // path to extract the download
         publicPath    = projectPath + '/' + LARAVEL_PUBLIC_DIR;   // path to the Laravel public directory
 
+    // ensure that we're in the project directory
+    goToProjectDir();
+
     // download foundation and copy across any required files
     download(
       FOUNDATION_REPO_URL,
@@ -569,32 +623,45 @@ var init  = {
                 if(count >= fileList.length){
                   // all files moved
 
-                  console.log('Removing old files');
-                  // remove the unnecessary Foundation files
-                  count     = 0;
-                  fileList  = [
-                    // zipped Foundation folder
-                    downloadPath + '.' + FOUNDATION_FILE_EXT,
-                    // extracted Foundation folder
-                    extractPath,
-                    // Foundation's Gruntfile
-                    publicPath + '/Gruntfile.js'
-                  ];
-                  deleteFile(
-                    fileList,
-                    function(){
-                      count++;
-
-                      if(count >= fileList.length){
-                        // all files deleted
-                        console.log('Foundation installed');
-
-                        if(callback){
-                          callback();
-                        }
-                      }
+                  // install any npm dependencies
+                  var fPckg  = require(publicPath + '/package.json');
+                  installNPMModules(
+                    fPckg.devDependencies,
+                    {
+                      saveDev: true
                     },
-                    errorHandler
+                    function(){
+                      console.log('Removing old files');
+                      // remove the unnecessary Foundation files
+                      count     = 0;
+                      fileList  = [
+                        // zipped Foundation folder
+                        downloadPath + '.' + FOUNDATION_FILE_EXT,
+                        // extracted Foundation folder
+                        extractPath,
+                        // Foundation's Gruntfile
+                        publicPath + '/Gruntfile.js',
+                        // Foundations Package file
+                        publicPath + '/package.json'
+                      ];
+
+                      deleteFile(
+                        fileList,
+                        function(){
+                          count++;
+
+                          if(count >= fileList.length){
+                            // all files deleted
+                            console.log('Foundation installed');
+
+                            if(callback){
+                              callback();
+                            }
+                          }
+                        },
+                        errorHandler
+                      );
+                    }
                   );
                 }
               },
@@ -665,29 +732,14 @@ var init  = {
 
         console.log('Installing Grunt dependencies (May require Root privileges)');
 
-        // check if Node needs to be run as root to install dependencies
-        isNodeRoot(function(isRoot){
-          // list of extra grunt dependencies
-          var gruntDpdcy = [
-            'grunt-contrib-uglify'
-          ];
-
-          spawnHandler(
-            'npm',
-            ['install', gruntDpdcy.join(' '), '--save'],
-            {
-              sudo: isRoot
-            },
-            function(){
-              console.log('Grunt dependencies installed');
-
-              if(callback){
-                callback();
-              }
-            },
-            errorHandler
-          );
-        });
+        // install the extra Grunt dependencies
+        installNPMModules(
+          'grunt-contrib-uglify',
+          {
+            saveDev: true
+          },
+          callback
+        );
       },
       errorHandler
     );
@@ -722,6 +774,8 @@ if(!projectName){
 }
 
 
+console.log(LOG_DIVIDER);
+console.log('Setting up Laravel-Foundation project');
 console.log('Project directory: %s', projectPath);
 
 // run the initialisation scripts
