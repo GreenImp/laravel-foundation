@@ -1,0 +1,56 @@
+# Numerous always-ignore extensions
+*.diff
+*.err
+*.orig
+*.log
+*.rej
+*.swo
+*.swp
+*.zip
+*.vi
+*~
+*.sass-cache
+!.gitkeep
+
+# IOS/Mac specific
+.DS_Store
+*.mode1v3
+*.pbxuser
+*.perspectivev3
+*.xcworkspace
+xcuserdata
+
+# ASP.NET/Windows specific
+Thumbs.db
+Desktop.ini
+[Oo]bj
+[Bb]in
+
+# Other OS or Editor folders/files
+._*
+.cache
+*.Cache
+.project
+.settings
+.tmproj
+*.esproj
+nbproject
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Komodo IDE
+*.komodoproject
+.komodotools
+
+# Folders to ignore
+.hg
+.svn
+.CVS
+.idea
+node_modules
+dist
+
+# Bower
+bower_components/

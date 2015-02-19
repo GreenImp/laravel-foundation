@@ -1,7 +1,9 @@
 //Gruntfile
 module.exports = function(grunt) {
-  //Initializing the configuration object
+  // Initializing the configuration object
   grunt.initConfig({
+    pkg: grunt.file.readJSON('package.json'),
+    
     // Paths variables
     paths: {
       // Development file locations (Where we put SASS files etc.)
@@ -18,17 +20,17 @@ module.exports = function(grunt) {
     },
 
     // Task configuration
-    // compiling of SASS files
     sass: {
       options: {
         includePaths: ['<%= paths.src.vendor %>foundation/scss']
-        //compass: true
       },
+      // compile the SASS files (Not compressed)
       dev: {
         files: {
           '<%= paths.dest.css %>app.css': '<%= paths.src.css %>app.scss'
         }
       },
+      // compile compressed versions of the SASS files
       prod: {
         options: {
           // @link https://github.com/sindresorhus/grunt-sass#outputstyle
