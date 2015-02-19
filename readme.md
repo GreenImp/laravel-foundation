@@ -1,13 +1,15 @@
 # Laravel and Foundation (libsass) installer
 
-Reference: http://gabriela.io/blog/2014/08/10/laravel-with-grunt-bower-foundation-and-sass/
+This a a Laravel and Foundation installer, which uses the SASS version of Foundation.
+
+The original idea came from [Gabriela D'Ávila](http://gabriela.io/blog/2014/08/10/laravel-with-grunt-bower-foundation-and-sass/), but has been greatly enhanced upon it and automatted the entire setup process.
 
 
 ## Requirements
 
 You'll need to have the following items installed before continuing.
 
-  * [Node.js](http://nodejs.org): Use the installer provided on the NodeJS website.
+  * [Node.js](http://nodejs.org): You can get the installer from NodeJS website.
   * [Bower](http://bower.io): Run `[sudo] npm install -g bower`
   * [Grunt](http://gruntjs.com/): Run `[sudo] npm install -g grunt-cli`
   * [Composer](https://getcomposer.org/): See https://getcomposer.org/download/
