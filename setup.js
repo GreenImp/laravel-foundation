@@ -481,11 +481,22 @@ var init  = {
       ['create-project', 'laravel/laravel', projectName, '--prefer-dist'],
       null,
       function(){
-        console.log('Laravel installed');
+        // rename the Laravel readme
+        moveFile(
+          {
+            src: projectPath + '/readme.md',
+            dest: projectPath + '/readme-laravel.md'
+          },
+          null,
+          function(){
+            console.log('Laravel installed');
 
-        if(callback){
-          callback();
-        }
+            if(callback){
+              callback();
+            }
+          },
+          errorHandler
+        );
       },
       errorHandler
     );
@@ -542,6 +553,11 @@ var init  = {
               {
                 src: publicPath + '/bower.json',
                 dest: projectPath + '/bower.json'
+              },
+              // move the readme file
+              {
+                src: publicPath + '/README.md',
+                dest: projectPath + '/readme-foundation.md'
               }
             ];
             moveFile(
@@ -562,9 +578,7 @@ var init  = {
                     // extracted Foundation folder
                     extractPath,
                     // Foundation's Gruntfile
-                    publicPath + '/Gruntfile.js',
-                    // Foundation's Readme (Not relevant)
-                    publicPath + '/README.md'
+                    publicPath + '/Gruntfile.js'
                   ];
                   deleteFile(
                     fileList,
