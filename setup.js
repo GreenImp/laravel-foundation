@@ -2,18 +2,20 @@
 
 
 // include required modules
-var exec    = require('child_process').exec,
-    spawn   = require('child_process').spawn,
-    sudo    = require('sudo'),
-    fs      = require('fs'),
-    mv      = require('mv'),
-    rimraf  = require('rimraf'),
-    merge   = require('node-merge'),
-    targz   = require('tar.gz'),
-    http    = require('http'),
-    https   = require('https'),
-    url     = require('url'),
-    printf  = require('util').format;
+var exec      = require('child_process').exec,
+    spawn     = require('child_process').spawn,
+    spawnSync = require('child_process').spawnSync,
+    sudo      = require('sudo'),
+    fs        = require('fs'),
+    mv        = require('mv'),
+    rimraf    = require('rimraf'),
+    merge     = require('node-merge'),
+    targz     = require('tar.gz'),
+    http      = require('http'),
+    https     = require('https'),
+    url       = require('url'),
+    printf    = require('util').format,
+    extend    = require("xtend");
 
 
 
@@ -98,7 +100,7 @@ var errorHandler          = function(errors){
        * @link http://stackoverflow.com/a/14231570
        * @type {*}
        */
-      options = {stdio: 'inherit'};
+      options = extend({}, options);
 
       if(useRoot){
         // store the spawn options
@@ -109,20 +111,37 @@ var errorHandler          = function(errors){
 
         // run as sudo
         cmd = sudo(arguments, sudoOps);
+      }else if(options.sync){
+        // run synchronously
+        cmd = spawnSync(command, arguments || [], options);
       }else{
         // run as user
+        options.stdio = 'inherit';
         cmd = spawn(command, arguments || [], options);
       }
 
       // assign any callbacks
-      cmd.on('close', function(code){
-        if(code === 0){
-          // success
+      if(useRoot || !options.sync){
+        cmd.on('close', function(code){
+          if(code === 0){
+            // success
+            if(successCallback){
+              successCallback();
+            }
+          }else if(errorCallback){
+            errorCallback();
+          }
+        });
+      }else{
+        //console.log(cmd.output);
+        if(cmd.stderr){
+          if(errorCallback){
+            errorCallback();
+          }
+        }else if(successCallback){
           successCallback();
-        }else{
-          errorCallback();
         }
-      });
+      }
 
       return cmd;
     },
@@ -405,6 +424,42 @@ var errorHandler          = function(errors){
 
 
 var init  = {
+  /**
+   *
+   * @param {string=} dependency
+   */
+  dependencyCheck: function(dependency){
+    var checks  = {
+      bower: function(){
+        var cmd = spawnHandler(
+          'bower',
+          ['-v'],
+          {sync: true}
+        );
+
+        return cmd.stderr;
+      },
+      grunt: function(){},
+      composer: function(){},
+      php: function(){}
+    };
+
+    if(dependency && checks[dependency]){
+      // check a single dependency
+      return checks[dependency]();
+    }else{
+      // loop through and check all of the dependencies
+      for(var property in checks){
+        if(checks.hasOwnProperty(property)){
+          // check the dependency
+          if(!init.dependencyCheck(property)){
+            // dependency failed - stop the loop
+            break;
+          }
+        }
+      }
+    }
+  },
   /**
    * Installs the dependencies required
    * so that a project can be created.
@@ -745,7 +800,9 @@ var init  = {
     );
   },
   all: function(global){
-    init.dependencies(global, function(){
+    init.dependencyCheck();
+
+    /*init.dependencies(global, function(){
       // install Laravel
       init.laravel(function(){
         // install Foundation
@@ -761,7 +818,7 @@ var init  = {
         // set up NPM
         //spawnHandler('npm', ['init', '-f'], null, function(){}, errorHandler);
       });
-    });
+    });*/
   }
 };
 
