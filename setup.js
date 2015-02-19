@@ -315,7 +315,7 @@ var errorHandler          = function(errors){
     },
     isNodeRoot            = function(callback){
       // determine the path to node, so we can check permissions
-      // TODO - check this functionality on Windows & Mac
+      // TODO - check this functionality on Windows
       getExecPath('node', function(path){
         // get the file stats
         fs.stat(path, function(err, stats){
@@ -323,7 +323,7 @@ var errorHandler          = function(errors){
             errorHandler(err);
           }else{
             // return result
-            callback(stats.uid == 0);
+            callback(stats.uid != process.getuid());
           }
         });
       });
@@ -406,6 +406,48 @@ var init  = {
             errorHandler
           );
         });
+      },
+      composer: function(global, callback){
+        // TODO - check this in Windows
+        spawnHandler(
+          'curl',
+          [
+            '-sS',
+            'https://getcomposer.org/installer',
+            '|',
+            'php'
+          ],
+          null,
+          function(){
+            console.log('Composer downloaded');
+
+            if(global){
+              // move the composer phar file to global directory
+              moveFile(
+                {
+                  src: 'composer.phar',
+                  dest: '/usr/local/bin/composer'
+                },
+                {mkdirp: true},
+                function(){
+                  console.log('Composer installed globally');
+
+                  if(callback){
+                    callback();
+                  }
+                },
+                errorHandler
+              );
+            }else{
+              console.log('Composer installed locally');
+
+              if(callback){
+                callback();
+              }
+            }
+          },
+          errorHandler
+        );
       }
     };
 
