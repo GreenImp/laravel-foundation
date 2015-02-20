@@ -550,7 +550,6 @@ var init  = {
    * If dependencies aren't installed,
    * the general init functions will fail!
    *
-   * @param {boolean=} global
    * @param {function=} callback
    */
   dependencies: function(callback){
