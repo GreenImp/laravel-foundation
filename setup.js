@@ -2,7 +2,8 @@
 
 
 // include required modules
-var exec      = require('child_process').exec,
+var os        = require('os'),
+    exec      = require('child_process').exec,
     spawn     = require('child_process').spawn,
     spawnSync = require('child_process').spawnSync,
     sudo      = require('sudo'),
@@ -144,6 +145,12 @@ var errorHandler          = function(errors){
       }
 
       return cmd;
+    },
+    isWindows             = function(){
+      console.log(os.platform());
+      console.log(os.type());
+
+      return os.platform === 'win32';
     },
     /**
      * Determines which request handler (http | https)
@@ -890,4 +897,5 @@ console.log('Project directory: %s', projectPath);
 console.log('');
 
 // run the initialisation scripts
-init.all(true);
+isWindows();
+//init.all(true);
