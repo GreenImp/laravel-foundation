@@ -502,22 +502,12 @@ var init  = {
       php: function(){
         var cmd = spawnHandler('php', ['-v'], {sync: true});
 
-        if(((cmd.stderr !== null) && cmd.stderr.toString()) || !cmd.stdout.toString()){
-          // error returned or no output
-          return false;
-        }else{
-          return true;
-        }
+        return ((cmd.stderr === null) || !cmd.stderr.toString()) && cmd.stdout && cmd.stdout.toString();
       },
       composer: function(){
         var cmd = spawnHandler('composer', ['-V'], {sync: true});
 
-        if(((cmd.stderr !== null) && cmd.stderr.toString()) || !cmd.stdout.toString()){
-          // error returned or no output
-          return false;
-        }else{
-          return true;
-        }
+        return ((cmd.stderr === null) || !cmd.stderr.toString()) && cmd.stdout && cmd.stdout.toString();
       }
     },
         failed  = [];
