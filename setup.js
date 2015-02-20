@@ -38,6 +38,8 @@ const FOUNDATION_FILENAME     = 'master';
 const FOUNDATION_INT_FILENAME = 'foundation-libsass-template-master';
 const FOUNDATION_REPO_URL     = 'https://codeload.github.com/zurb/foundation-libsass-template/' + FOUNDATION_FILE_EXT + '/' + FOUNDATION_FILENAME;
 
+const COMPOSER_URL            = 'https://getcomposer.org/installer';
+
 
 
 var errorHandler          = function(errors){
@@ -278,13 +280,26 @@ var errorHandler          = function(errors){
       }else{
         console.log('Moving file: %s -> %s', file.src, file.dest);
 
-        mv(file.src, file.dest, options || {}, function(err){
-          if(err){
-            errorCallback(err);
-          }else{
-            successCallback();
-          }
-        });
+        if(options && options.sudo){
+          spawnHandler(
+            'mv',
+            [
+              file.src,
+              file.dest
+            ],
+            options,
+            successCallback,
+            errorCallback
+          );
+        }else{
+          mv(file.src, file.dest, options || {}, function(err){
+            if(err){
+              errorCallback(err);
+            }else{
+              successCallback();
+            }
+          });
+        }
       }
     },
     copyFile              = function(src, dest, successCallback, errorCallback){
@@ -574,44 +589,53 @@ var init  = {
           }
         );
       },
-      composer: function(global, callback){
-        // TODO - check this in Windows
-        spawnHandler(
-          'curl',
-          [
-            '-sS',
-            'https://getcomposer.org/installer',
-            '|',
-            'php'
-          ],
-          null,
-          function(){
+      composer: function(callback){
+        console.log('# Installing Composer');
+
+        execHandler(
+          printf('php -r "readfile(\'%s\');" | php', COMPOSER_URL),
+          function(stdout){
             console.log('Composer downloaded');
 
-            if(global){
-              // move the composer phar file to global directory
-              moveFile(
-                {
-                  src: 'composer.phar',
-                  dest: '/usr/local/bin/composer'
-                },
-                {mkdirp: true},
-                function(){
-                  console.log('Composer installed globally');
+            // move the composer phar file to a globally accessible directory
+            moveFile(
+              {
+                src: process.cwd() + '/composer.phar',
+                dest: isWindows() ? '/bin' : '/usr/local/bin/composer'
+              },
+              {
+                mkdirp: true,
+                sudo: !isWindows()
+              },
+              function(){
+                if(isWindows()){
+                  // on Windows we need to make a bat file
+                  /*
+                  @ECHO OFF
+                  php "%~dp0composer.phar" %*
+                  */
+                  writeFile(
+                    '/bin/composer.bat',
+                    'echo @php "%~dp0composer.phar" %*',
+                    function(){
+                      console.log('Composer installed');
+
+                      if(callback){
+                        callback();
+                      }
+                    },
+                    errorHandler
+                  );
+                }else{
+                  console.log('Composer installed');
 
                   if(callback){
                     callback();
                   }
-                },
-                errorHandler
-              );
-            }else{
-              console.log('Composer installed locally');
-
-              if(callback){
-                callback();
-              }
-            }
+                }
+              },
+              errorHandler
+            );
           },
           errorHandler
         );
