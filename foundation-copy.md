@@ -1,7 +1,7 @@
 * **index.html    -> public/index.html**
 * **bower.json    -> bower.json**
-* package.json    -> package.json (Merge and add dependency `grunt-contrib-uglify`)
-* **Gruntfile.js    -> REMOVE**
+* **package.json  -> package.json (Merge and add dependency `grunt-contrib-uglify`)**
+* **Gruntfile.js  -> REMOVE**
 * **humans.txt    -> public/humans.txt**
 * **README.md     -> readme-foundation.md**
 * **robots.txt    -> public/robots.txt (optional, almost identical to Laravel's)**
