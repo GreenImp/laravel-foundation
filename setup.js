@@ -2,18 +2,20 @@
 
 
 // include required modules
-var exec    = require('child_process').exec,
-    spawn   = require('child_process').spawn,
-    sudo    = require('sudo'),
-    fs      = require('fs'),
-    mv      = require('mv'),
-    rimraf  = require('rimraf'),
-    merge   = require('node-merge'),
-    targz   = require('tar.gz'),
-    http    = require('http'),
-    https   = require('https'),
-    url     = require('url'),
-    printf  = require('util').format;
+var exec      = require('child_process').exec,
+    spawn     = require('child_process').spawn,
+    spawnSync = require('child_process').spawnSync,
+    sudo      = require('sudo'),
+    fs        = require('fs'),
+    mv        = require('mv'),
+    rimraf    = require('rimraf'),
+    merge     = require('node-merge'),
+    targz     = require('tar.gz'),
+    http      = require('http'),
+    https     = require('https'),
+    url       = require('url'),
+    printf    = require('util').format,
+    extend    = require("xtend");
 
 
 
@@ -98,7 +100,7 @@ var errorHandler          = function(errors){
        * @link http://stackoverflow.com/a/14231570
        * @type {*}
        */
-      options = {stdio: 'inherit'};
+      options = extend({}, options);
 
       if(useRoot){
         // store the spawn options
@@ -109,20 +111,37 @@ var errorHandler          = function(errors){
 
         // run as sudo
         cmd = sudo(arguments, sudoOps);
+      }else if(options.sync){
+        // run synchronously
+        cmd = spawnSync(command, arguments || [], options);
       }else{
         // run as user
+        options.stdio = 'inherit';
         cmd = spawn(command, arguments || [], options);
       }
 
       // assign any callbacks
-      cmd.on('close', function(code){
-        if(code === 0){
-          // success
+      if(useRoot || !options.sync){
+        cmd.on('close', function(code){
+          if(code === 0){
+            // success
+            if(successCallback){
+              successCallback();
+            }
+          }else if(errorCallback){
+            errorCallback();
+          }
+        });
+      }else{
+        //console.log(cmd.output);
+        if(cmd.stderr){
+          if(errorCallback){
+            errorCallback();
+          }
+        }else if(successCallback){
           successCallback();
-        }else{
-          errorCallback();
         }
-      });
+      }
 
       return cmd;
     },
@@ -328,6 +347,30 @@ var errorHandler          = function(errors){
         });
       });
     },
+    /**
+     * Checks if the given NPM module is installed
+     *
+     * @link http://stackoverflow.com/a/20801918
+     * @param {string} module   The module name
+     * @param {boolean=} global Whether to check global or local. Defaults to true
+     * @returns {boolean}
+     */
+    isNPMModuleInstalled  = function(module, global){
+      // npm [-g] list --depth=0 | grep {module}
+      var args = ['list', '--depth=0', '|', 'grep', module],
+          cmd;
+
+      // add global flag
+      if(global !== false){
+        args.unshift('-g');
+      }
+
+      // run the commans
+      cmd = spawnHandler('npm', args, {sync: true});
+
+      // return true if no error and output exists (Output is empty if module ot installed)
+      return !cmd.stderr.toString() && cmd.stdout.toString();
+    },
     installNPMModules     = function(modules, options, callback){
       if(!modules){
         if(callback){
@@ -405,6 +448,66 @@ var errorHandler          = function(errors){
 
 
 var init  = {
+  /**
+   * Checks if the given software dependency
+   * is installed.
+   * `dependency` can be an array of
+   * dependencies to check.
+   * If no dependency is specified, all
+   * dependencies are checked.
+   *
+   * @param {string=} dependency
+   */
+  checkDependency: function(dependency){
+    var checks  = {
+      bower: function(){
+        return isNPMModuleInstalled('bower');
+      },
+      grunt: function(){
+        return isNPMModuleInstalled('grunt-cli');
+      },
+      php: function(){
+        return false;
+        var cmd = spawnHandler('php', ['-v'], {sync: true});
+        return !cmd.stderr.toString() && cmd.stdout.toString();
+      },
+      composer: function(){
+        var cmd = spawnHandler('composer', ['-V'], {sync: true});
+        return !cmd.stderr.toString() && cmd.stdout.toString();
+      }
+    },
+        failed  = [];
+
+
+    if(dependency){
+      // dependency defined - ensure that it is an array
+      dependency = Array.isArray(dependency) ? dependency : [dependency];
+    }else{
+      // no dependency defined - get all the dependency names
+      dependency = Object.keys(checks);
+    }
+
+    // loop through and check all of the dependencies
+    for(var prop in dependency){
+      if(dependency.hasOwnProperty(prop)){
+        // check the dependency
+        console.log('Checking dependency `%s`', dependency[prop]);
+
+        if(!checks[dependency[prop]] || !checks[dependency[prop]]()){
+          // dependency check doesn't exist or it failed
+          failed.push(dependency[prop]);
+        }
+      }
+    }
+
+    if(failed.length){
+      console.log('Dependencies not found: %s', failed.join(' '));
+      return false;
+    }else{
+      console.log('Dependencies met');
+      return true;
+    }
+  },
   /**
    * Installs the dependencies required
    * so that a project can be created.
@@ -745,6 +848,13 @@ var init  = {
     );
   },
   all: function(global){
+    // check required dependencies that we don't/can't install
+    if(!init.checkDependency('php')){
+      errorHandler('PHP is not installed. Please install PHP before continuing: http://php.net/manual/en/install.php');
+      return false;
+    }
+
+    // pre-requisites met - continue with the setup
     init.dependencies(global, function(){
       // install Laravel
       init.laravel(function(){
@@ -777,6 +887,7 @@ if(!projectName){
 console.log(LOG_DIVIDER);
 console.log('Setting up Laravel-Foundation project');
 console.log('Project directory: %s', projectPath);
+console.log('');
 
 // run the initialisation scripts
 init.all(true);
