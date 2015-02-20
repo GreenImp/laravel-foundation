@@ -220,6 +220,23 @@ var errorHandler          = function(errors){
       });
     },
     /**
+     * Writes data to a file
+     *
+     * @param {string} file
+     * @param {string} data
+     * @param {function} successCallback
+     * @param {function} errorCallback
+     */
+    writeFile             = function(file, data, successCallback, errorCallback){
+      fs.writeFile(file, data, function(err){
+        if(err){
+          errorCallback(err);
+        }else{
+          successCallback();
+        }
+      });
+    },
+    /**
      * Deletes a file or directory.
      * `file` can be an array of files/directories.
      *
