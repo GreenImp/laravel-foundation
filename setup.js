@@ -347,6 +347,30 @@ var errorHandler          = function(errors){
         });
       });
     },
+    /**
+     * Checks if the given NPM module is installed
+     *
+     * @link http://stackoverflow.com/a/20801918
+     * @param {string} module   The module name
+     * @param {boolean=} global Whether to check global or local. Defaults to true
+     * @returns {boolean}
+     */
+    isNPMModuleInstalled  = function(module, global){
+      // npm [-g] list --depth=0 | grep {module}
+      var args = ['list', '--depth=0', '|', 'grep', module],
+          cmd;
+
+      // add global flag
+      if(global !== false){
+        args.unshift('-g');
+      }
+
+      // run the commans
+      cmd = spawnHandler('npm', args, {sync: true});
+
+      // return true if no error and output exists (Output is empty if module ot installed)
+      return !cmd.stderr.toString() && cmd.stdout.toString();
+    },
     installNPMModules     = function(modules, options, callback){
       if(!modules){
         if(callback){
@@ -425,39 +449,63 @@ var errorHandler          = function(errors){
 
 var init  = {
   /**
+   * Checks if the given software dependency
+   * is installed.
+   * `dependency` can be an array of
+   * dependencies to check.
+   * If no dependency is specified, all
+   * dependencies are checked.
    *
    * @param {string=} dependency
    */
-  dependencyCheck: function(dependency){
+  checkDependency: function(dependency){
     var checks  = {
       bower: function(){
-        var cmd = spawnHandler(
-          'bower',
-          ['-v'],
-          {sync: true}
-        );
-
-        return cmd.stderr;
+        return isNPMModuleInstalled('bower');
       },
-      grunt: function(){},
-      composer: function(){},
-      php: function(){}
-    };
+      grunt: function(){
+        return isNPMModuleInstalled('grunt-cli');
+      },
+      php: function(){
+        return false;
+        var cmd = spawnHandler('php', ['-v'], {sync: true});
+        return !cmd.stderr.toString() && cmd.stdout.toString();
+      },
+      composer: function(){
+        var cmd = spawnHandler('composer', ['-V'], {sync: true});
+        return !cmd.stderr.toString() && cmd.stdout.toString();
+      }
+    },
+        failed  = [];
 
-    if(dependency && checks[dependency]){
-      // check a single dependency
-      return checks[dependency]();
+
+    if(dependency){
+      // dependency defined - ensure that it is an array
+      dependency = Array.isArray(dependency) ? dependency : [dependency];
     }else{
-      // loop through and check all of the dependencies
-      for(var property in checks){
-        if(checks.hasOwnProperty(property)){
-          // check the dependency
-          if(!init.dependencyCheck(property)){
-            // dependency failed - stop the loop
-            break;
-          }
+      // no dependency defined - get all the dependency names
+      dependency = Object.keys(checks);
+    }
+
+    // loop through and check all of the dependencies
+    for(var prop in dependency){
+      if(dependency.hasOwnProperty(prop)){
+        // check the dependency
+        console.log('Checking dependency `%s`', dependency[prop]);
+
+        if(!checks[dependency[prop]] || !checks[dependency[prop]]()){
+          // dependency check doesn't exist or it failed
+          failed.push(dependency[prop]);
         }
       }
+    }
+
+    if(failed.length){
+      console.log('Dependencies not found: %s', failed.join(' '));
+      return false;
+    }else{
+      console.log('Dependencies met');
+      return true;
     }
   },
   /**
@@ -800,9 +848,14 @@ var init  = {
     );
   },
   all: function(global){
-    init.dependencyCheck();
+    // check required dependencies that we don't/can't install
+    if(!init.checkDependency('php')){
+      errorHandler('PHP is not installed. Please install PHP before continuing: http://php.net/manual/en/install.php');
+      return false;
+    }
 
-    /*init.dependencies(global, function(){
+    // pre-requisites met - continue with the setup
+    init.dependencies(global, function(){
       // install Laravel
       init.laravel(function(){
         // install Foundation
@@ -818,7 +871,7 @@ var init  = {
         // set up NPM
         //spawnHandler('npm', ['init', '-f'], null, function(){}, errorHandler);
       });
-    });*/
+    });
   }
 };
 
@@ -834,6 +887,7 @@ if(!projectName){
 console.log(LOG_DIVIDER);
 console.log('Setting up Laravel-Foundation project');
 console.log('Project directory: %s', projectPath);
+console.log('');
 
 // run the initialisation scripts
 init.all(true);
