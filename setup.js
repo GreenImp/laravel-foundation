@@ -493,23 +493,23 @@ var init  = {
    */
   checkDependency: function(dependency){
     var checks  = {
-      bower: function(){
-        return isNPMModuleInstalled('bower');
-      },
-      grunt: function(){
-        return isNPMModuleInstalled('grunt-cli');
-      },
-      php: function(){
-        var cmd = spawnHandler('php', ['-v'], {sync: true});
+          bower: function(){
+            return isNPMModuleInstalled('bower');
+          },
+          grunt: function(){
+            return isNPMModuleInstalled('grunt-cli');
+          },
+          php: function(){
+            var cmd = spawnHandler('php', ['-v'], {sync: true});
 
-        return ((cmd.stderr === null) || !cmd.stderr.toString()) && cmd.stdout && cmd.stdout.toString();
-      },
-      composer: function(){
-        var cmd = spawnHandler('composer', ['-V'], {sync: true});
+            return ((cmd.stderr === null) || !cmd.stderr.toString()) && cmd.stdout && cmd.stdout.toString();
+          },
+          composer: function(){
+            var cmd = spawnHandler('composer', ['-V'], {sync: true});
 
-        return ((cmd.stderr === null) || !cmd.stderr.toString()) && cmd.stdout && cmd.stdout.toString();
-      }
-    },
+            return ((cmd.stderr === null) || !cmd.stderr.toString()) && cmd.stdout && cmd.stdout.toString();
+          }
+        },
         failed  = [];
 
 
@@ -558,89 +558,113 @@ var init  = {
 
     var software  = {
       grunt: function(callback){
-        console.log('# Installing Grunt (May require Root privileges)');
+        if(!init.checkDependency('grunt')){
+          console.log('# Installing Grunt (May require Root privileges)');
 
-        installNPMModules(
-          'grunt-cli',
-          {
-            global: true
-          },
-          function(){
-            console.log('Grunt installed');
+          installNPMModules(
+            'grunt-cli',
+            {
+              global: true
+            },
+            function(){
+              console.log('Grunt installed');
 
-            if(callback){
-              callback();
+              if(callback){
+                callback();
+              }
             }
+          );
+        }else{
+          console.log('# Grunt already installed');
+
+          if(callback){
+            callback();
           }
-        );
+        }
       },
       bower: function(callback){
-        console.log('# Installing Bower (May require Root privileges)');
+        if(!init.checkDependency('bower')){
+          console.log('# Installing Bower (May require Root privileges)');
 
-        installNPMModules(
-          'bower',
-          {
-            global: true
-          },
-          function(){
-            console.log('Bower installed');
+          installNPMModules(
+            'bower',
+            {
+              global: true
+            },
+            function(){
+              console.log('Bower installed');
 
-            if(callback){
-              callback();
+              if(callback){
+                callback();
+              }
             }
+          );
+        }else{
+          console.log('# Bower already installed');
+
+          if(callback){
+            callback();
           }
-        );
+        }
       },
       composer: function(callback){
-        console.log('# Installing Composer');
+        if(!init.checkDependency('composer')){
+          console.log('# Installing Composer');
 
-        execHandler(
-          printf('php -r "readfile(\'%s\');" | php', COMPOSER_URL),
-          function(stdout){
-            console.log('Composer downloaded');
+          execHandler(
+            printf('php -r "readfile(\'%s\');" | php', COMPOSER_URL),
+            function(stdout){
+              console.log('Composer downloaded');
 
-            // move the composer phar file to a globally accessible directory
-            moveFile(
-              {
-                src: process.cwd() + '/composer.phar',
-                dest: isWindows() ? '/bin' : '/usr/local/bin/composer'
-              },
-              {
-                mkdirp: true,
-                sudo: !isWindows()
-              },
-              function(){
-                if(isWindows()){
-                  // on Windows we need to make a bat file
-                  /*
-                  @ECHO OFF
-                  php "%~dp0composer.phar" %*
-                  */
-                  writeFile(
-                    '/bin/composer.bat',
-                    'echo @php "%~dp0composer.phar" %*',
-                    function(){
-                      console.log('Composer installed');
+              // move the composer phar file to a globally accessible directory
+              moveFile(
+                {
+                  src: process.cwd() + '/composer.phar',
+                  dest: isWindows() ? '/bin' : '/usr/local/bin/composer'
+                },
+                {
+                  mkdirp: true,
+                  sudo: !isWindows()
+                },
+                function(){
+                  if(isWindows()){
+                    // on Windows we need to make a bat file
+                    /*
+                    @ECHO OFF
+                    php "%~dp0composer.phar" %*
+                    */
+                    writeFile(
+                      '/bin/composer.bat',
+                      'echo @php "%~dp0composer.phar" %*',
+                      function(){
+                        console.log('Composer installed');
 
-                      if(callback){
-                        callback();
-                      }
-                    },
-                    errorHandler
-                  );
-                }else{
-                  console.log('Composer installed');
+                        if(callback){
+                          callback();
+                        }
+                      },
+                      errorHandler
+                    );
+                  }else{
+                    console.log('Composer installed');
 
-                  if(callback){
-                    callback();
+                    if(callback){
+                      callback();
+                    }
                   }
-                }
-              },
-              errorHandler
-            );
-          },
-          errorHandler
-        );
+                },
+                errorHandler
+              );
+            },
+            errorHandler
+          );
+        }else{
+          console.log('# Composer already installed');
+
+          if(callback){
+            callback();
+          }
+        }
       }
     };
 
