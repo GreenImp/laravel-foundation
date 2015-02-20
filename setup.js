@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+"use strict";
 
 
 // include required modules
@@ -22,7 +23,7 @@ var os        = require('os'),
 
 
 var projectName       = process.argv[2],                                                              // project name - used for directory name
-    projectPathParent = process.argv[3] || process.cwd().replace(new RegExp(projectName + '$'), '');  // path to the parent directory of the project
+    projectPathParent = process.argv[3] || process.cwd().replace(new RegExp(projectName + '$'), ''),  // path to the parent directory of the project
     projectPath       = projectPathParent + '/' + projectName;                                        // path to the project directory
 
 
@@ -83,13 +84,13 @@ var errorHandler          = function(errors){
      * Handles `spawn` commands
      *
      * @param {string} command
-     * @param {Array=} arguments
+     * @param {Array=} args
      * @param {object=} options
      * @param {function=} successCallback
      * @param {function=} errorCallback
      * @returns {*}
      */
-    spawnHandler          = function(command, arguments, options, successCallback, errorCallback){
+    spawnHandler          = function(command, args, options, successCallback, errorCallback){
       var cmd,
           useRoot = options && options.sudo,
           sudoOps = {
@@ -103,13 +104,13 @@ var errorHandler          = function(errors){
         sudoOps.spawnOptions = options;
 
         // sudo requires the command to be the first in the arguments list
-        (arguments || []).unshift(command);
+        (args || []).unshift(command);
 
         // run as sudo
-        cmd = sudo(arguments, sudoOps);
+        cmd = sudo(args, sudoOps);
       }else if(options.sync){
         // run synchronously
-        cmd = spawnSync(command, arguments || [], options);
+        cmd = spawnSync(command, args || [], options);
       }else{
         // run as user
         /**
@@ -118,7 +119,7 @@ var errorHandler          = function(errors){
          * @link http://stackoverflow.com/a/14231570
          */
         options.stdio = 'inherit';
-        cmd = spawn(command, arguments || [], options);
+        cmd = spawn(command, args || [], options);
       }
 
       // assign any callbacks
