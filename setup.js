@@ -94,13 +94,6 @@ var errorHandler          = function(errors){
             cachePassword: true
           };
 
-      // TODO - merge options with our default
-      /**
-       * Setting `stdio` to 'inherit', to preserve output colours.
-       *
-       * @link http://stackoverflow.com/a/14231570
-       * @type {*}
-       */
       options = extend({}, options);
 
       if(useRoot){
@@ -117,6 +110,11 @@ var errorHandler          = function(errors){
         cmd = spawnSync(command, arguments || [], options);
       }else{
         // run as user
+        /**
+         * Setting `stdio` to 'inherit', to preserve output colours.
+         *
+         * @link http://stackoverflow.com/a/14231570
+         */
         options.stdio = 'inherit';
         cmd = spawn(command, arguments || [], options);
       }
@@ -134,7 +132,6 @@ var errorHandler          = function(errors){
           }
         });
       }else{
-        //console.log(cmd.output);
         if(cmd.stderr){
           if(errorCallback){
             errorCallback();
@@ -147,9 +144,6 @@ var errorHandler          = function(errors){
       return cmd;
     },
     isWindows             = function(){
-      console.log(os.platform());
-      console.log(os.type());
-
       return os.platform === 'win32';
     },
     /**
@@ -474,7 +468,6 @@ var init  = {
         return isNPMModuleInstalled('grunt-cli');
       },
       php: function(){
-        return false;
         var cmd = spawnHandler('php', ['-v'], {sync: true});
         return !cmd.stderr.toString() && cmd.stdout.toString();
       },
@@ -525,17 +518,13 @@ var init  = {
    * @param {boolean=} global
    * @param {function=} callback
    */
-  dependencies: function(global, callback){
-    /* [Grunt](http://gruntjs.com/): Run `[sudo] npm install -g grunt-cli`
-     * [Bower](http://bower.io): Run `[sudo] npm install -g bower`
-     * [Composer](https://getcomposer.org/): See https://getcomposer.org/download/
-     */
+  dependencies: function(callback){
     console.log(LOG_DIVIDER);
     console.log('# Installing Dependency software');
 
     var software  = {
-      grunt: function(global, callback){
-        console.log('# Installing Grunt' + (global ? ' Globally' : '') + ' (May require Root privileges)');
+      grunt: function(callback){
+        console.log('# Installing Grunt (May require Root privileges)');
 
         installNPMModules(
           'grunt-cli',
@@ -551,8 +540,8 @@ var init  = {
           }
         );
       },
-      bower: function(global, callback){
-        console.log('# Installing Bower' + (global ? ' Globally' : '') + ' (May require Root privileges)');
+      bower: function(callback){
+        console.log('# Installing Bower (May require Root privileges)');
 
         installNPMModules(
           'bower',
@@ -612,9 +601,11 @@ var init  = {
       }
     };
 
-
-    software.grunt(global, function(){
-      software.bower(global, callback);
+    // TODO - this should be an automated loop
+    software.grunt(function(){
+      software.bower(function(){
+        software.composer(callback);
+      });
     });
   },
   /**
@@ -854,7 +845,7 @@ var init  = {
       errorHandler
     );
   },
-  all: function(global){
+  all: function(){
     // check required dependencies that we don't/can't install
     if(!init.checkDependency('php')){
       errorHandler('PHP is not installed. Please install PHP before continuing: http://php.net/manual/en/install.php');
@@ -862,12 +853,14 @@ var init  = {
     }
 
     // pre-requisites met - continue with the setup
-    init.dependencies(global, function(){
+    init.dependencies(function(){
       // install Laravel
       init.laravel(function(){
         // install Foundation
         init.foundation(function(){
+          // install bower
           init.bower(function(){
+            // intstall grunt
             init.grunt(function(){
               console.log(LOG_DIVIDER);
               console.log('# Setup complete, happy coding :)');
@@ -897,5 +890,4 @@ console.log('Project directory: %s', projectPath);
 console.log('');
 
 // run the initialisation scripts
-isWindows();
-//init.all(true);
+init.all();
