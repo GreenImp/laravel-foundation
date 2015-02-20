@@ -501,11 +501,23 @@ var init  = {
       },
       php: function(){
         var cmd = spawnHandler('php', ['-v'], {sync: true});
-        return !cmd.stderr.toString() && cmd.stdout.toString();
+
+        if(((cmd.stderr !== null) && cmd.stderr.toString()) || !cmd.stdout.toString()){
+          // error returned or no output
+          return false;
+        }else{
+          return true;
+        }
       },
       composer: function(){
         var cmd = spawnHandler('composer', ['-V'], {sync: true});
-        return !cmd.stderr.toString() && cmd.stdout.toString();
+
+        if(((cmd.stderr !== null) && cmd.stderr.toString()) || !cmd.stdout.toString()){
+          // error returned or no output
+          return false;
+        }else{
+          return true;
+        }
       }
     },
         failed  = [];
