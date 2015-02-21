@@ -18,6 +18,8 @@ var os        = require('os'),
     printf    = require('util').format,
     extend    = require("xtend");
 
+require('string.prototype.endswith');
+
 
 
 
@@ -421,6 +423,14 @@ var errorHandler          = function(errors){
           var moduleArray = [];
           for(var module in modules){
             if(modules.hasOwnProperty(module)){
+              if((module == 'node-sass') && modules[module].endsWith('1.2.3')){
+                // fix node-sass installation issues with version 1.2.3
+                modules[module] = '~2.0.1';
+              }else if((module == 'grunt-sass') && modules[module].endsWith('0.17.0')){
+                // fix node-sass installation issues with version 0.17.0 of grunt-sass
+                modules[module] = '~0.18.0';
+              }
+
               moduleArray.push(module + '@' + modules[module]);
             }
           }
