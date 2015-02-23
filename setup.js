@@ -774,12 +774,12 @@ var init  = {
               // move the JS into the assets directory
               {
                 src: publicPath + '/js',
-                dest: publicPath + '/assets/js'
+                dest: projectPath + '/assets/js'
               },
               // move the SCSS into the assets directory
               {
                 src: publicPath + '/scss',
-                dest: publicPath + '/assets/scss'
+                dest: projectPath + '/assets/scss'
               },
               // move the bower file into the project root
               {
