@@ -13,8 +13,8 @@ module.exports = function(grunt) {
       },
       // Production file locations, where Grunt will output the files
       dest: {
-        css: './public/stylesheets/',
-        js: './public/js/',
+        css: './public/assets/css/',
+        js: './public/assets/js/',
         vendor: './public/assets/vendor/'
       }
     },
