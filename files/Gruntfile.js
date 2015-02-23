@@ -5,13 +5,13 @@ module.exports = function(grunt) {
     
     // Paths variables
     paths: {
-      // Development file locations (Where we put SASS files etc.)
+      // Development file locations, where we put SASS files etc.
       src: {
-        css: './public/assets/scss/',
-        js: './public/assets/js/',
-        vendor: './public/assets/vendor/'
+        css: './assets/scss/',
+        js: './assets/js/',
+        vendor: './assets/vendor/'
       },
-      // Production file locationd where Grunt will output the files
+      // Production file locations, where Grunt will output the files
       dest: {
         css: './public/stylesheets/',
         js: './public/js/'
