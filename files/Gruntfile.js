@@ -49,6 +49,17 @@ module.exports = function(grunt) {
         compress: true,
         mangle: false // change to true if you want obfuscation (Changed variable names etc)
       },
+      // move JS files into public
+      dev: {
+        options: {
+          compress: false
+        },
+        files: {
+          '<%= paths.dest.js %>app.js': [
+            '<%= paths.src.js %>app.js'
+          ]
+        }
+      },
       // minify JS files
       prod: {
         files: {
@@ -70,7 +81,7 @@ module.exports = function(grunt) {
       },
       uglify: {
         files: '<%= paths.src.js %>**/*.js',
-        tasks: ['uglify:prod']
+        tasks: ['uglify:dev']
       }
     }
   });
@@ -81,7 +92,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
 
   // Task definition
-  grunt.registerTask('build', ['sass:dev']);                    // create the dev files (SASS etc.)
+  grunt.registerTask('build', ['sass:dev', 'uglify:dev']);      // create the dev files (SASS etc.)
   grunt.registerTask('release', ['sass:prod', 'uglify:prod']);  // create the release/production files
   grunt.registerTask('default', ['build','watch']);             // watch for changes and run dev builds
 };
