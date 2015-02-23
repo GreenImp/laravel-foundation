@@ -9,12 +9,13 @@ module.exports = function(grunt) {
       src: {
         css: './assets/scss/',
         js: './assets/js/',
-        vendor: './assets/vendor/'
+        vendor: './public/assets/vendor/'
       },
       // Production file locations, where Grunt will output the files
       dest: {
         css: './public/stylesheets/',
-        js: './public/js/'
+        js: './public/js/',
+        vendor: './public/assets/vendor/'
       }
     },
 
@@ -53,13 +54,6 @@ module.exports = function(grunt) {
         files: {
           '<%= paths.dest.js %>app.min.js': [
             '<%= paths.src.js %>app.js'
-          ],
-          '<%= paths.dest.js %>vendor.min.js': [
-            '<%= paths.src.vendor %>jquery/dist/jquery.js',
-            //'<%= paths.src.vendor %>jquery.cookie/jquery.cookie.js',
-            '<%= paths.src.vendor %>jquery.placeholder/jquery.placeholder.js',
-            '<%= paths.src.vendor %>fastclick/lib/fastclick.js',
-            '<%= paths.src.vendor %>foundation/js/foundation.js'
           ]
         }
       }
