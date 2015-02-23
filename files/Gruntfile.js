@@ -2,7 +2,7 @@ module.exports = function(grunt) {
   // Initializing the configuration object
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    
+
     // Paths variables
     paths: {
       // Development file locations, where we put SASS files etc.
@@ -23,8 +23,11 @@ module.exports = function(grunt) {
       options: {
         includePaths: ['<%= paths.src.vendor %>foundation/scss']
       },
-      // compile the SASS files (Not compressed)
+      // compile the SASS files (Uncompressed)
       dev: {
+        options: {
+          sourceMap: true
+        },
         files: {
           '<%= paths.dest.css %>app.css': '<%= paths.src.css %>app.scss'
         }
@@ -32,9 +35,8 @@ module.exports = function(grunt) {
       // compile compressed versions of the SASS files
       prod: {
         options: {
-          // @link https://github.com/sindresorhus/grunt-sass#outputstyle
-          outputStyle: 'compressed',
-          sourceMap: true
+          // @link https://github.com/sass/node-sass#outputstyle
+          outputStyle: 'compressed'
         },
         files: {
           '<%= paths.dest.css %>app.min.css': '<%= paths.src.css %>app.scss'
@@ -67,6 +69,7 @@ module.exports = function(grunt) {
     },
     watch: {
       grunt: { files: ['Gruntfile.js'] },
+
       sass: {
         files: '<%= paths.src.css %>**/*.scss',
         tasks: ['sass:dev']
