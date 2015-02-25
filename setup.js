@@ -935,11 +935,19 @@ var init  = {
       SCRIPT_PATH + '/files/.gitignore',
       projectPath + '/.gitignore',
       function(){
-        console.log('Post install complete');
+        // copy Foundation's SASS settings file into the dev scss folder
+        copyFile(
+          projectPath + '/' + LARAVEL_PUBLIC_DIR + '/assets/vendor/foundation/scss/foundation/_settings.scss',
+          projectPath + '/' + LARAVEL_PUBLIC_DIR + '/assets/scss/_settings.scss',
+          function(){
+            console.log('Post install complete');
 
-        if(callback){
-          callback();
-        }
+            if(callback){
+              callback();
+            }
+          },
+          errorHandler
+        );
       },
       errorHandler
     );
