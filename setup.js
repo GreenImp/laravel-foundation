@@ -820,7 +820,9 @@ var init  = {
                         // Foundation's Gruntfile
                         publicPath + '/Gruntfile.js',
                         // Foundations Package file
-                        publicPath + '/package.json'
+                        publicPath + '/package.json',
+                        // Foundation's bower rc file
+                        publicPath + '/.bowerrc'
                       ];
 
                       deleteFile(
