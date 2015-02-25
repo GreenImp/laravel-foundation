@@ -28,7 +28,6 @@
     "tar.gz": "*",
     "mv": "2.0.3",
     "rimraf": "2.2.8",
-    "node-merge": "git://github.com/GreenImp/node-merge.git",
     "xtend": "git://github.com/Raynos/xtend.git",
     "string.prototype.endswith": "*"
   },

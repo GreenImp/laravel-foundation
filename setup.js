@@ -10,7 +10,6 @@ var os        = require('os'),
     fs        = require('fs'),
     mv        = require('mv'),
     rimraf    = require('rimraf'),
-    merge     = require('node-merge'),
     targz     = require('tar.gz'),
     http      = require('http'),
     https     = require('https'),
@@ -761,37 +760,36 @@ var init  = {
           function(){
             console.log('\nMerging Foundation into Laravel');
 
-            var count, fileList;
-
-
-            // copy the Foundation files into the Laravel public directory
-            // mergeTo is Synchronous!
-            merge.mergeTo(extractPath + '/' + FOUNDATION_INT_FILENAME, publicPath);
+            var foundationPath  = extractPath + '/' + FOUNDATION_INT_FILENAME,
+                count         = 0,
+                fileList      = [
+                  {
+                    src: foundationPath + '/index.html',
+                    dest: publicPath + '/index.html'
+                  },
+                  {
+                    src: foundationPath + '/bower.json',
+                    dest: projectPath + '/bower.json'
+                  },
+                  {
+                    src: foundationPath + '/humans.txt',
+                    dest: publicPath + '/humans.txt'
+                  },
+                  {
+                    src: foundationPath + '/README.md',
+                    dest: projectPath + '/readme-foundation.md'
+                  },
+                  {
+                    src: foundationPath + '/js',
+                    dest: projectPath + '/assets/js'
+                  },
+                  {
+                    src: foundationPath + '/scss',
+                    dest: projectPath + '/assets/scss'
+                  }
+                ];
 
             // move the files into the correct locations
-            count     = 0;
-            fileList  = [
-              // move the JS into the assets directory
-              {
-                src: publicPath + '/js',
-                dest: projectPath + '/assets/js'
-              },
-              // move the SCSS into the assets directory
-              {
-                src: publicPath + '/scss',
-                dest: projectPath + '/assets/scss'
-              },
-              // move the bower file into the project root
-              {
-                src: publicPath + '/bower.json',
-                dest: projectPath + '/bower.json'
-              },
-              // move the readme file
-              {
-                src: publicPath + '/README.md',
-                dest: projectPath + '/readme-foundation.md'
-              }
-            ];
             moveFile(
               fileList,
               {mkdirp: true},
@@ -802,7 +800,7 @@ var init  = {
                   // all files moved
 
                   // install any npm dependencies
-                  var fPckg  = require(publicPath + '/package.json');
+                  var fPckg  = require(foundationPath + '/package.json');
                   installNPMModules(
                     fPckg.devDependencies,
                     {
@@ -816,15 +814,7 @@ var init  = {
                         // zipped Foundation folder
                         downloadPath + '.' + FOUNDATION_FILE_EXT,
                         // extracted Foundation folder
-                        extractPath,
-                        // Foundation's Gruntfile
-                        publicPath + '/Gruntfile.js',
-                        // Foundations Package file
-                        publicPath + '/package.json',
-                        // Foundation's bower rc file
-                        publicPath + '/.bowerrc',
-                        // Foundation's .gitignore file
-                        publicPath + '/.gitignore'
+                        extractPath
                       ];
 
                       deleteFile(
