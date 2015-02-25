@@ -47,12 +47,14 @@ module.exports = function(grunt) {
     uglify: {
       options: {
         compress: true,
-        mangle: false // change to true if you want obfuscation (Changed variable names etc)
+        mangle: false,  // change to true if you want obfuscation (Changed variable names etc)
+        sourceMap: true
       },
       // move JS files into public
       dev: {
         options: {
-          compress: false
+          compress: false,
+          beautify: true
         },
         files: {
           '<%= paths.dest.js %>app.js': [
