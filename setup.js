@@ -822,7 +822,9 @@ var init  = {
                         // Foundations Package file
                         publicPath + '/package.json',
                         // Foundation's bower rc file
-                        publicPath + '/.bowerrc'
+                        publicPath + '/.bowerrc',
+                        // Foundation's .gitignore file
+                        publicPath + '/.gitignore'
                       ];
 
                       deleteFile(
@@ -920,6 +922,24 @@ var init  = {
           },
           callback
         );
+      },
+      errorHandler
+    );
+  },
+  post: function(){
+    console.log(LOG_DIVIDER);
+    console.log('# Running post install scripts');
+
+    // copy `.gitignore` file into project root
+    copyFile(
+      SCRIPT_PATH + '/files/.gitignore',
+      projectPath + '/.gitignore',
+      function(){
+        console.log('Post install complete');
+
+        if(callback){
+          callback();
+        }
       },
       errorHandler
     );

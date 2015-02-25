@@ -7,8 +7,8 @@
 * **robots.txt    -> public/robots.txt (optional, almost identical to Laravel's)**
 * **js            -> public/assets/js**
 * **scss          -> public/assets/scss**
-* .gitignore      -> .gitignore (Merge with Laravel's)
-* .bowerrc        -> REMOVE
+* **.gitignore      -> .gitignore (Merge with Laravel's)**
+* **.bowerrc        -> REMOVE**
 
 Once Foundation is installed, via bower, we need to copy the `_settings.scss` file to `public/assets/scss`
 

@@ -1,0 +1,9 @@
+# Laravel
+/vendor
+/node_modules
+.env
+
+# Foundation
+*.DS_Store
+/css/*
+/bower_components/*
