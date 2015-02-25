@@ -926,7 +926,7 @@ var init  = {
       errorHandler
     );
   },
-  post: function(){
+  post: function(callback){
     console.log(LOG_DIVIDER);
     console.log('# Running post install scripts');
 
@@ -938,7 +938,7 @@ var init  = {
         // copy Foundation's SASS settings file into the dev scss folder
         copyFile(
           projectPath + '/' + LARAVEL_PUBLIC_DIR + '/assets/vendor/foundation/scss/foundation/_settings.scss',
-          projectPath + '/' + LARAVEL_PUBLIC_DIR + '/assets/scss/_settings.scss',
+          projectPath + '/assets/scss/_settings.scss',
           function(){
             console.log('Post install complete');
 
