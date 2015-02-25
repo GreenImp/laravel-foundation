@@ -961,14 +961,13 @@ var init  = {
           init.bower(function(){
             // intstall grunt
             init.grunt(function(){
-              console.log(LOG_DIVIDER);
-              console.log('# Setup complete, happy coding :)');
+              init.post(function(){
+                console.log(LOG_DIVIDER);
+                console.log('# Setup complete, happy coding :)');
+              });
             });
           });
         });
-
-        // set up NPM
-        //spawnHandler('npm', ['init', '-f'], null, function(){}, errorHandler);
       });
     });
   }
