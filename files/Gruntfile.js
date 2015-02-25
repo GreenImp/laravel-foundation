@@ -22,13 +22,11 @@ module.exports = function(grunt) {
     // Task configuration
     sass: {
       options: {
-        includePaths: ['<%= paths.src.vendor %>foundation/scss']
+        includePaths: ['<%= paths.src.vendor %>foundation/scss'],
+        sourceMap: true
       },
       // compile the SASS files (Uncompressed)
       dev: {
-        options: {
-          sourceMap: true
-        },
         files: {
           '<%= paths.dest.css %>app.css': '<%= paths.src.css %>app.scss'
         }
