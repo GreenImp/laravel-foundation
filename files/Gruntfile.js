@@ -20,25 +20,17 @@ module.exports = function(grunt) {
     },
 
     // Task configuration
+    // compile the SASS files
     sass: {
       options: {
         includePaths: ['<%= paths.src.vendor %>foundation/scss'],
+        // @link https://github.com/sass/node-sass#outputstyle
+        outputStyle: 'compressed',
         sourceMap: true
       },
-      // compile the SASS files (Uncompressed)
-      dev: {
+      dist: {
         files: {
           '<%= paths.dest.css %>app.css': '<%= paths.src.css %>app.scss'
-        }
-      },
-      // compile compressed versions of the SASS files
-      prod: {
-        options: {
-          // @link https://github.com/sass/node-sass#outputstyle
-          outputStyle: 'compressed'
-        },
-        files: {
-          '<%= paths.dest.css %>app.min.css': '<%= paths.src.css %>app.scss'
         }
       }
     },
@@ -48,22 +40,10 @@ module.exports = function(grunt) {
         mangle: false,  // change to true if you want obfuscation (Changed variable names etc)
         sourceMap: true
       },
-      // move JS files into public
-      dev: {
-        options: {
-          compress: false,
-          beautify: true
-        },
+      // minify JS files
+      dist: {
         files: {
           '<%= paths.dest.js %>app.js': [
-            '<%= paths.src.js %>app.js'
-          ]
-        }
-      },
-      // minify JS files
-      prod: {
-        files: {
-          '<%= paths.dest.js %>app.min.js': [
             '<%= paths.src.js %>app.js'
           ]
         }
@@ -77,11 +57,11 @@ module.exports = function(grunt) {
 
       sass: {
         files: '<%= paths.src.css %>**/*.scss',
-        tasks: ['sass:dev']
+        tasks: ['sass']
       },
       uglify: {
         files: '<%= paths.src.js %>**/*.js',
-        tasks: ['uglify:dev']
+        tasks: ['uglify']
       }
     }
   });
@@ -92,7 +72,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
 
   // Task definition
-  grunt.registerTask('build', ['sass:dev', 'uglify:dev']);      // create the dev files (SASS etc.)
-  grunt.registerTask('release', ['sass:prod', 'uglify:prod']);  // create the release/production files
-  grunt.registerTask('default', ['build','watch']);             // watch for changes and run dev builds
+  grunt.registerTask('build', ['sass', 'uglify']);  // create the dev files (SASS etc.)
+  grunt.registerTask('default', ['build','watch']); // watch for changes and run dev builds
 };
