@@ -24,11 +24,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "sudo": "latest",
-    "tar.gz": "latest",
+    "sudo": "*",
+    "tar.gz": "*",
     "mv": "2.0.3",
     "rimraf": "2.2.8",
-    "node-merge": "git://github.com/GreenImp/node-merge.git"
+    "node-merge": "git://github.com/GreenImp/node-merge.git",
+    "xtend": "git://github.com/Raynos/xtend.git",
+    "string.prototype.endswith": "*"
   },
   "preferGlobal": true,
   "private": true
