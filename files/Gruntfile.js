@@ -7,8 +7,8 @@ module.exports = function(grunt) {
     paths: {
       // Development file locations, where we put SASS files etc.
       src: {
-        css: './assets/scss/',
-        js: './assets/js/',
+        css: './resources/assets/scss/',
+        js: './resources/assets/js/',
         vendor: './public/assets/vendor/'
       },
       // Production file locations, where Grunt will output the files

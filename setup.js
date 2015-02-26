@@ -33,6 +33,7 @@ const LOG_DIVIDER             = '====================================';
 const SCRIPT_PATH             = __dirname;  // path to this script
 
 const LARAVEL_PUBLIC_DIR      = 'public';
+const LARAVEL_RESOURCE_DIR    = 'resources';
 
 const FOUNDATION_FILE_EXT     = 'tar.gz';
 const FOUNDATION_FILENAME     = 'master';
@@ -739,9 +740,10 @@ var init  = {
     console.log(LOG_DIVIDER);
     console.log('# Setting up Foundation');
 
-    var downloadPath  = projectPath + '/' + FOUNDATION_FILENAME,  // path to download foundation
-        extractPath   = projectPath + '/' + FOUNDATION_FILENAME,  // path to extract the download
-        publicPath    = projectPath + '/' + LARAVEL_PUBLIC_DIR;   // path to the Laravel public directory
+    var downloadPath        = projectPath + '/' + FOUNDATION_FILENAME,              // path to download foundation
+        extractPath         = projectPath + '/' + FOUNDATION_FILENAME,              // path to extract the download
+        publicPath          = projectPath + '/' + LARAVEL_PUBLIC_DIR,               // path to the Laravel public directory
+        resourceAssetsPath  = projectPath + '/' + LARAVEL_RESOURCE_DIR + '/assets'; // path to the Laravel resource assets directory
 
     // ensure that we're in the project directory
     goToProjectDir();
@@ -781,11 +783,11 @@ var init  = {
                   },
                   {
                     src: foundationPath + '/js',
-                    dest: projectPath + '/assets/js'
+                    dest: resourceAssetsPath + '/js'
                   },
                   {
                     src: foundationPath + '/scss',
-                    dest: projectPath + '/assets/scss'
+                    dest: resourceAssetsPath + '/scss'
                   }
                 ];
 
@@ -928,7 +930,7 @@ var init  = {
         // copy Foundation's SASS settings file into the dev scss folder
         copyFile(
           projectPath + '/' + LARAVEL_PUBLIC_DIR + '/assets/vendor/foundation/scss/foundation/_settings.scss',
-          projectPath + '/assets/scss/_settings.scss',
+          projectPath + '/' + LARAVEL_RESOURCE_DIR + '/assets/scss/_settings.scss',
           function(){
             console.log('Post install complete');
 
